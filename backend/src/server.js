@@ -16,8 +16,9 @@ async function main() {
 
     const app = createApp();
 
-    const server = app.listen(env.port, () => {
-        console.log(`[server] RuralCare backend listening on port ${env.port}`);
+    const host = process.env.HOST || '0.0.0.0';
+    const server = app.listen(env.port, host, () => {
+        console.log(`[server] RuralCare backend listening on http://${host}:${env.port}`);
     });
 
     // Graceful shutdown

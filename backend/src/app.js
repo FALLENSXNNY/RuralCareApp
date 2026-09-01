@@ -27,6 +27,26 @@ function createApp() {
         legacyHeaders: false,
     });
 
+    // Root & Health check for Railway uptime checks
+    app.get('/', (req, res) => {
+        res.status(200).json({
+            status: 'ok',
+            service: 'ruralcare-backend',
+            message: 'RuralCare Backend API is running',
+            health: '/health',
+            api: '/api/v1'
+        });
+    });
+
+    app.get('/health', (req, res) => {
+        res.status(200).json({
+            status: 'ok',
+            service: 'ruralcare-backend',
+            uptime: process.uptime(),
+            timestamp: new Date().toISOString(),
+        });
+    });
+
     app.use('/api/v1', authLimiter, routes);
 
     // 404 + error handling

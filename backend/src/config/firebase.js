@@ -18,9 +18,27 @@ function initializeFirebaseAdmin() {
 
     const { env } = require('./env');
 
+    let credential;
+    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+        try {
+            let raw = process.env.FIREBASE_SERVICE_ACCOUNT.trim();
+            if (!raw.startsWith('{')) {
+                // If base64 encoded
+                raw = Buffer.from(raw, 'base64').toString('utf8');
+            }
+            const serviceAccount = JSON.parse(raw);
+            credential = admin.credential.cert(serviceAccount);
+            console.log('[firebase] Admin SDK initialized using FIREBASE_SERVICE_ACCOUNT');
+        } catch (err) {
+            console.warn('[firebase] Could not parse FIREBASE_SERVICE_ACCOUNT JSON, falling back to ADC:', err.message);
+            credential = admin.credential.applicationDefault();
+        }
+    } else {
+        credential = admin.credential.applicationDefault();
+    }
+
     admin.initializeApp({
-        // Explicit project ID prevents accidentally talking to the wrong project.
-        credential: admin.credential.applicationDefault(),
+        credential,
         projectId: env.firebaseProjectId,
     });
 

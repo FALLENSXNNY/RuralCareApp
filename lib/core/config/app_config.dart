@@ -25,16 +25,30 @@ class AppConfig {
   /// Change this to your machine's local IP address (e.g. 192.168.1.5).
   static const String _devLanIp = '192.168.1.5';
 
+  /// Custom backend URL provided at build/runtime via `--dart-define=BACKEND_URL=...`
+  static const String _customBackendUrl = String.fromEnvironment('BACKEND_URL');
+
+  /// Production / Railway deployed backend API URL.
+  /// Replace with your actual Railway domain after deployment, e.g.:
+  /// https://ruralcare-backend-production.up.railway.app/api/v1
+  static const String railwayProductionUrl =
+      'https://ruralcare-backend-production.up.railway.app/api/v1';
+
   /// Resolves the backend API base URL at runtime based on platform.
   ///
+  /// - If --dart-define=BACKEND_URL was supplied, uses that directly.
+  /// - Production           → railwayProductionUrl
   /// - Web (Chrome dev)     → http://localhost:3000/api/v1
   /// - Android emulator     → http://10.0.2.2:3000/api/v1 (loopback to host)
   /// - iOS simulator        → http://127.0.0.1:3000/api/v1
   /// - Physical device      → http://<_devLanIp>:3000/api/v1 (LAN IP)
-  /// - Production           → https://api.ruralcare.app/api/v1
   static String get apiBaseUrl {
+    if (_customBackendUrl.isNotEmpty) {
+      return _customBackendUrl;
+    }
+
     if (environment == AppEnvironment.production) {
-      return 'https://api.ruralcare.app/api/v1';
+      return railwayProductionUrl;
     }
 
     // Web — Chrome dev server; backend runs on the same machine.
