@@ -1,0 +1,60 @@
+    });
+});
+
+describe('GET /api/v1/patients/me — authenticated route protection', () => {
+    test('rejects unauthenticated request (401)', async () => {
+        const res = await request(app).get('/api/v1/patients/me');
+        expect(res.status).toBe(401);
+        expect(Patient.findOneAndUpdate).not.toHaveBeenCalled();
+    });
+
+    test('returns authenticated patient info', async () => {
+        verifyIdToken.mockResolvedValue(VALID_TOKEN_PAYLOAD);
+        Patient.findOne.mockReturnValue({
+            lean: jest.fn().mockResolvedValue(PATIENT_DOC),
+        });
+        Patient.findOneAndUpdate.mockReturnValue({
+            lean: jest.fn().mockResolvedValue(PATIENT_DOC),
+        });
+
+        const res = await request(app)
+            .get('/api/v1/patients/me')
+            .set('Authorization', 'Bearer valid-token');
+
+        expect(res.status).toBe(200);
+        expect(res.body.patient.firebaseUid).toBe('firebase-uid-123');
+    });
+});
+
+describe('GET /api/v1/health', () => {
+    test('returns ok without authentication', async () => {
+        const res = await request(app).get('/api/v1/health');
+        expect(res.status).toBe(200);
+        expect(res.body.status).toBe('ok');
+    });
+});
+
+describe('Duplicate prevention (service contract)', () => {
+    test('findOrCreateByUid upserts on firebaseUid (same UID = same record)', async () => {
+        verifyIdToken.mockResolvedValue(VALID_TOKEN_PAYLOAD);
+        Patient.findOneAndUpdate.mockReturnValue({
+            lean: jest.fn().mockResolvedValue(PATIENT_DOC),
+        });
+
+        // Two logins with the same token UID
+        await request(app)
+            .post('/api/v1/auth/session')
+            .set('Authorization', 'Bearer token-1');
+        await request(app)
+            .post('/api/v1/auth/session')
+            .set('Authorization', 'Bearer token-2');
+
+        // Both queries keyed by the same firebaseUid — upsert guarantees one record
+        const calls = Patient.findOneAndUpdate.mock.calls;
+        expect(calls.length).toBe(2);
+        expect(calls[0][0]).toEqual({ firebaseUid: 'firebase-uid-123' });
+        expect(calls[1][0]).toEqual({ firebaseUid: 'firebase-uid-123' });
+        // upsert: true in options
+        expect(calls[0][2].upsert).toBe(true);
+    });
+});

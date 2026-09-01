@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "1045232562713",
+    "project_id": "luciferai-3b049",
+    "storage_bucket": "luciferai-3b049.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1045232562713:android:6c7fecab6b3c0a1c1ff088",
+        "android_client_info": {
+          "package_name": "com.ruralcare.ruralcare"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1045232562713-m56vtputbc32f0j5aiukplqf2t9i9oeo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDi_At6Zn7yU_bU9LIkg1OV_UflNbz9W1Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1045232562713-m56vtputbc32f0j5aiukplqf2t9i9oeo.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1045232562713-e41324dlu6b3d3497fanis0frbfthq0k.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ruralcare.ruralcare"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

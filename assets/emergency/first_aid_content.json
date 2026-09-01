@@ -1,0 +1,494 @@
+[
+  {
+    "id": "cpr",
+    "title": "CPR (Heart Attack & Arrest)",
+    "icon": "🫀",
+    "urgency": "HIGH",
+    "callAmb": true,
+    "warningBanner": "If person is unresponsive and not breathing normally, start CPR immediately.",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Check Response & Breathing",
+        "body": "Tap shoulders firmly and shout: 'Are you OK?'. Check chest movement for 5 seconds."
+      },
+      {
+        "step": 2,
+        "title": "Call 108 Ambulance",
+        "body": "Shout for help and dial 108 immediately. Put phone on speaker."
+      },
+      {
+        "step": 3,
+        "title": "Place Hands in Center of Chest",
+        "body": "Place heel of one hand in center of chest between nipples. Interlock other hand on top."
+      },
+      {
+        "step": 4,
+        "title": "Push Hard & Fast (100–120 bpm)",
+        "body": "Push down 5–6 cm deep at 100 to 120 beats per minute. Allow chest to fully recoil."
+      },
+      {
+        "step": 5,
+        "title": "Give 2 Rescue Breaths (If Trained)",
+        "body": "Tilt head back, pinch nose, and blow 2 breaths. Continue 30 compressions and 2 breaths until help arrives."
+      }
+    ],
+    "dos": [
+      "Push hard and fast in center of chest (100–120 bpm)",
+      "Let chest come all the way up between compressions",
+      "Call 108 and keep phone on speaker mode",
+      "Switch with another person every 2 minutes if tired"
+    ],
+    "donts": [
+      "Do NOT delay compressions to check pulse",
+      "Do NOT bend your elbows while pushing",
+      "Do NOT stop compressions until ambulance arrives or person wakes up"
+    ]
+  },
+  {
+    "id": "unconscious",
+    "title": "Unconsciousness / Fainting",
+    "icon": "🫀",
+    "urgency": "HIGH",
+    "callAmb": true,
+    "warningBanner": "Check responsiveness and airway immediately.",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Check Response & Breathing",
+        "body": "Tap shoulders firmly and ask loudly: 'Are you OK?'. Look at chest for 5-10 seconds."
+      },
+      {
+        "step": 2,
+        "title": "Open Airway & Turn on Side",
+        "body": "Gently tilt head back and lift chin. Turn onto side (recovery position) if breathing."
+      },
+      {
+        "step": 3,
+        "title": "Call 108 Ambulance",
+        "body": "Dial 108 immediately. If NOT breathing normally, begin CPR immediately."
+      }
+    ],
+    "dos": [
+      "Check responsiveness and normal breathing",
+      "Place in side recovery position if breathing",
+      "Loosen tight clothing and ensure fresh air",
+      "Call 108 ambulance"
+    ],
+    "donts": [
+      "Do NOT give anything to eat or drink",
+      "Do NOT shake a baby or child violently",
+      "Do NOT place pillow under head if not breathing"
+    ]
+  },
+  {
+    "id": "choking",
+    "title": "Choking",
+    "icon": "🫁",
+    "urgency": "HIGH",
+    "callAmb": true,
+    "warningBanner": "If person cannot breathe, speak, or cough, act immediately.",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Encourage Forceful Coughing",
+        "body": "If the person can cough or speak, encourage them to keep coughing hard."
+      },
+      {
+        "step": 2,
+        "title": "Deliver 5 Firm Back Blows",
+        "body": "Lean person forward and deliver 5 firm blows between shoulder blades with heel of hand."
+      },
+      {
+        "step": 3,
+        "title": "Perform 5 Abdominal Thrusts (Heimlich)",
+        "body": "Stand behind person, place fist above belly button, and pull sharply inward and upward 5 times."
+      },
+      {
+        "step": 4,
+        "title": "Repeat Back Blows & Thrusts",
+        "body": "Alternate 5 back blows and 5 thrusts until the object clears. If unconscious, lower to ground and start CPR."
+      }
+    ],
+    "dos": [
+      "Encourage strong coughing if airway is partially open",
+      "Alternate 5 back blows with 5 abdominal thrusts",
+      "Call 108 if blockage does not clear immediately"
+    ],
+    "donts": [
+      "Do NOT give abdominal thrusts to infants (use back slaps & chest thrusts)",
+      "Do NOT perform blind finger sweeps in the mouth",
+      "Do NOT slap on the back if person is standing upright"
+    ]
+  },
+  {
+    "id": "bleeding",
+    "title": "Severe Bleeding",
+    "icon": "🩸",
+    "urgency": "HIGH",
+    "callAmb": true,
+    "warningBanner": "Direct continuous pressure is the most effective way to stop severe bleeding.",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Apply Direct Firm Pressure",
+        "body": "Press firmly on the bleeding wound using a clean cloth, sterile gauze, or bare hands."
+      },
+      {
+        "step": 2,
+        "title": "Elevate Wounded Limb",
+        "body": "Raise the bleeding arm or leg above heart level while continuing firm pressure."
+      },
+      {
+        "step": 3,
+        "title": "Maintain Continuous Pressure for 10 Min",
+        "body": "Keep pressing without lifting cloth. If blood soaks through, add more cloth on top."
+      },
+      {
+        "step": 4,
+        "title": "Bandage Firmly & Call 108",
+        "body": "Wrap a tight bandage over the dressing. Call 108 or rush to PHC. Keep person warm."
+      }
+    ],
+    "dos": [
+      "Press continuously with clean cloth for 10 minutes",
+      "Elevate the injured limb above heart level",
+      "Add more cloth layers if blood soaks through",
+      "Keep the person warm with a blanket"
+    ],
+    "donts": [
+      "Do NOT remove embedded objects (e.g. knives, glass, metal)",
+      "Do NOT wash deep, severely bleeding wounds with water",
+      "Do NOT remove the first soaked cloth layer"
+    ]
+  },
+  {
+    "id": "burns",
+    "title": "Burns & Scalds",
+    "icon": "🔥",
+    "urgency": "MEDIUM",
+    "callAmb": false,
+    "warningBanner": "Use cool running tap water only. Never apply toothpaste, butter, or oil.",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Cool with Running Tap Water",
+        "body": "Hold burn under cool running tap water for 15–20 minutes immediately. Never use ice."
+      },
+      {
+        "step": 2,
+        "title": "Remove Rings & Constrictive Items",
+        "body": "Take off rings, bangles, and tight clothes before swelling. Do not peel stuck clothes."
+      },
+      {
+        "step": 3,
+        "title": "Cover Loosely with Clean Cloth",
+        "body": "Cover loosely with clean plastic cling wrap or sterile non-stick cloth to prevent infection."
+      },
+      {
+        "step": 4,
+        "title": "Seek Medical Care",
+        "body": "Visit PHC or call 108 if burn is larger than palm, on face/hands, or if victim is a child."
+      }
+    ],
+    "dos": [
+      "Cool under running water for 15 to 20 minutes",
+      "Cover loosely with clean plastic wrap or sterile cloth",
+      "Give clean water sips to prevent dehydration"
+    ],
+    "donts": [
+      "Do NOT apply toothpaste, butter, mud, turmeric, or oil",
+      "Do NOT apply ice directly on burned skin",
+      "Do NOT burst blisters or peel stuck clothing"
+    ]
+  },
+  {
+    "id": "fracture",
+    "title": "Fracture & Immobilization",
+    "icon": "🦴",
+    "urgency": "MEDIUM",
+    "callAmb": false,
+    "warningBanner": "Do not try to realign or push back a broken bone.",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Support in Current Position",
+        "body": "Do not move or straighten the broken bone. Keep it supported in the exact position found."
+      },
+      {
+        "step": 2,
+        "title": "Apply Temporary Rigid Splint",
+        "body": "Use a rolled towel, cardboard, or wooden stick to immobilize joints above and below fracture."
+      },
+      {
+        "step": 3,
+        "title": "Apply Ice Pack Wrapped in Cloth",
+        "body": "Place an ice pack wrapped in a towel on the area for 15 minutes to control swelling."
+      },
+      {
+        "step": 4,
+        "title": "Carefully Transport to Hospital",
+        "body": "Transport to CHC or District Hospital for X-ray and casting. Do not put weight on limb."
+      }
+    ],
+    "dos": [
+      "Immobilize joint above and below fracture site",
+      "Support with padded splint, cardboard, or sling",
+      "Apply ice pack wrapped in a cloth"
+    ],
+    "donts": [
+      "Do NOT attempt to straighten or push back a broken bone",
+      "Do NOT massage or apply pressure to injured bone",
+      "Do NOT allow patient to walk on broken leg"
+    ]
+  },
+  {
+    "id": "snake_bite",
+    "title": "Snake Bite",
+    "icon": "🐍",
+    "urgency": "HIGH",
+    "callAmb": true,
+    "warningBanner": "Do NOT suck venom, cut the skin, or apply tight tourniquets.",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Stay Calm & Keep Person Still",
+        "body": "Make victim lie down completely still. Movement spreads venom faster through the body."
+      },
+      {
+        "step": 2,
+        "title": "Remove Rings & Tight Items",
+        "body": "Quickly remove rings, bangles, anklets, and tight clothing before swelling starts."
+      },
+      {
+        "step": 3,
+        "title": "Immobilize Limb Below Heart",
+        "body": "Keep bitten limb lower than heart level. Secure with a loose splint or sling."
+      },
+      {
+        "step": 4,
+        "title": "Cover Loosely with Clean Cloth",
+        "body": "Wipe bite area with clean water and cover loosely with a clean, dry cloth."
+      },
+      {
+        "step": 5,
+        "title": "Call 108 & Rush for ASV",
+        "body": "Call 108 ambulance immediately or rush to PHC/hospital with Anti-Snake Venom (ASV)."
+      }
+    ],
+    "dos": [
+      "Keep victim calm and completely motionless",
+      "Remove jewelry and tight clothing near bite",
+      "Immobilize the bitten limb with a splint",
+      "Rush to hospital with Anti-Snake Venom (ASV)"
+    ],
+    "donts": [
+      "Do NOT cut, slash, or burn the bite area",
+      "Do NOT suck venom with mouth or suction devices",
+      "Do NOT tie tight tourniquets or apply ice/chemicals",
+      "Do NOT give tea, coffee, alcohol, or herbal medicines"
+    ]
+  },
+  {
+    "id": "electric_shock",
+    "title": "Electric Shock",
+    "icon": "⚡",
+    "urgency": "HIGH",
+    "callAmb": true,
+    "warningBanner": "Never touch victim directly while they are still in contact with electrical source.",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Turn Off Power Source",
+        "body": "Immediately switch off the main circuit breaker or unplug the wire. Do not touch victim."
+      },
+      {
+        "step": 2,
+        "title": "Separate with Non-Conductive Item",
+        "body": "If power cannot be cut, push wire away using dry wooden stick, broom, plastic, or rubber."
+      },
+      {
+        "step": 3,
+        "title": "Check Breathing & Airway",
+        "body": "Once safe, check response and breathing. If not breathing, start CPR compressions immediately."
+      },
+      {
+        "step": 4,
+        "title": "Call 108 & Recovery Position",
+        "body": "Call 108 ambulance. If breathing, place in side recovery position and cover burn spots."
+      }
+    ],
+    "dos": [
+      "Turn off the main electrical power switch first",
+      "Use dry wood, plastic, or rubber to push wire away",
+      "Check breathing and start CPR if unresponsive",
+      "Call 108 ambulance immediately"
+    ],
+    "donts": [
+      "Do NOT touch the victim with bare hands while connected to power",
+      "Do NOT use wet objects or metal to separate the wire",
+      "Do NOT move victim if neck or spinal injury is suspected"
+    ]
+  },
+  {
+    "id": "heat_stroke",
+    "title": "Heat Stroke & Dehydration",
+    "icon": "☀️",
+    "urgency": "HIGH",
+    "callAmb": true,
+    "warningBanner": "High body temperature (>40°C) with confusion is a critical medical emergency.",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Move to Cool Shade Immediately",
+        "body": "Move person out of the hot sun into shade or an airy room. Loosen heavy clothing."
+      },
+      {
+        "step": 2,
+        "title": "Rapidly Cool the Skin",
+        "body": "Sponge cool water all over skin. Place wet cloths or ice packs on neck, armpits, and groin."
+      },
+      {
+        "step": 3,
+        "title": "Fan Continuously",
+        "body": "Fan the person vigorously with electric or hand fan to speed up body cooling."
+      },
+      {
+        "step": 4,
+        "title": "Give ORS if Conscious & Call 108",
+        "body": "If awake, give small sips of ORS or water. If confused or vomiting, call 108 right away."
+      }
+    ],
+    "dos": [
+      "Move to shaded, airy area immediately",
+      "Apply cool wet cloths to neck, armpits, and groin",
+      "Fan continuously and give ORS if conscious",
+      "Call 108 if person is confused or unresponsive"
+    ],
+    "donts": [
+      "Do NOT give fluids to an unconscious or vomiting person",
+      "Do NOT give paracetamol or aspirin for heat stroke",
+      "Do NOT use freezing ice baths (causes shivering)"
+    ]
+  },
+  {
+    "id": "chest_pain",
+    "title": "Chest Pain / Heart Attack",
+    "icon": "❤️",
+    "urgency": "HIGH",
+    "callAmb": true,
+    "warningBanner": "Chest pain radiating to arm, jaw, or neck requires immediate emergency care.",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Make Person Sit Upright",
+        "body": "Help person sit comfortably leaning against wall. Loosen tight collar and waist."
+      },
+      {
+        "step": 2,
+        "title": "Call 108 Immediately",
+        "body": "Dial 108 right away. Tell operator you suspect a heart attack."
+      },
+      {
+        "step": 3,
+        "title": "Aspirin if Prescribed",
+        "body": "If person has prescribed heart medicine (Sorbitrate / Aspirin) and no allergy, have them chew it."
+      },
+      {
+        "step": 4,
+        "title": "Monitor Breathing & Prepare CPR",
+        "body": "Stay calm beside victim. If they lose consciousness and stop breathing, begin CPR."
+      }
+    ],
+    "dos": [
+      "Sit person upright with knees bent (W position)",
+      "Call 108 ambulance immediately",
+      "Keep surrounding quiet and well-ventilated"
+    ],
+    "donts": [
+      "Do NOT allow person to walk or exert themselves",
+      "Do NOT give heavy food or water",
+      "Do NOT leave person unattended"
+    ]
+  },
+  {
+    "id": "poisoning",
+    "title": "Pesticide & Poisoning",
+    "icon": "⚠️",
+    "urgency": "HIGH",
+    "callAmb": true,
+    "warningBanner": "Do NOT induce vomiting unless specifically advised by a doctor.",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Move to Fresh Open Air",
+        "body": "Move victim away from pesticide spray, toxic fumes, or poison area into fresh air."
+      },
+      {
+        "step": 2,
+        "title": "Strip Clothes & Wash Skin",
+        "body": "Remove contaminated clothes and wash skin with soap and plenty of running water."
+      },
+      {
+        "step": 3,
+        "title": "Preserve Container / Chemical Label",
+        "body": "Keep the pesticide bottle or chemical packet to show doctors at the hospital."
+      },
+      {
+        "step": 4,
+        "title": "Call 108 & Transport Immediately",
+        "body": "Call 108 ambulance. Report chemical name and rush to nearest equipped hospital."
+      }
+    ],
+    "dos": [
+      "Move to fresh air immediately",
+      "Wash exposed skin with soap and plenty of water",
+      "Bring chemical container or label to hospital"
+    ],
+    "donts": [
+      "Do NOT induce vomiting (can burn food pipe)",
+      "Do NOT give raw eggs, kerosene, or home remedies",
+      "Do NOT give fluids if person is drowsy"
+    ]
+  },
+  {
+    "id": "high_fever",
+    "title": "High Fever & Fits",
+    "icon": "🤒",
+    "urgency": "MEDIUM",
+    "callAmb": false,
+    "warningBanner": "Watch for seizures (fits) in children with very high fever.",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Tepid Water Sponging",
+        "body": "Wipe forehead, neck, chest, and arms with cloth dipped in lukewarm (not ice) water."
+      },
+      {
+        "step": 2,
+        "title": "Offer Small Sips of Fluids",
+        "body": "Offer clean water, coconut water, rice water, dal water, or ORS in small sips."
+      },
+      {
+        "step": 3,
+        "title": "If Seizure / Fit Occurs",
+        "body": "Turn person on their side. Clear nearby sharp objects. Do not hold them down."
+      },
+      {
+        "step": 4,
+        "title": "Visit PHC for Evaluation",
+        "body": "Visit PHC to test for infection. Call 108 if fever exceeds 104°F or fits last >5 minutes."
+      }
+    ],
+    "dos": [
+      "Sponge with lukewarm tap water",
+      "Encourage plenty of fluids and rest",
+      "Turn on side in recovery position if seizure occurs"
+    ],
+    "donts": [
+      "Do NOT use ice or alcohol for sponging",
+      "Do NOT put onion, keys, or spoons in mouth during fits",
+      "Do NOT bundle up in heavy blankets"
+    ]
+  }
+]
