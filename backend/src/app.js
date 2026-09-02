@@ -8,6 +8,9 @@ const { notFound, errorHandler } = require('./middleware/errorHandler');
 function createApp() {
     const app = express();
 
+    // Trust first proxy hop (Railway reverse proxy / edge gateway)
+    app.set('trust proxy', 1);
+
     // Basic middleware
     app.use(express.json({ limit: '1mb' }));
 
