@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Internet for API calls and image loading -->
+    <!-- Internet and network state for API calls, connectivity, and image loading -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <!-- Phone call for 108 emergency -->
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <!-- Camera and microphone for video consultation -->

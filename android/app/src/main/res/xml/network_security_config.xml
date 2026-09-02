@@ -19,6 +19,12 @@
         <!-- Physical device on the same LAN as the dev machine -->
         <domain includeSubdomains="false">192.168.1.5</domain>
     </domain-config>
-    <!-- Everything else stays cleartext-blocked -->
-    <base-config cleartextTrafficPermitted="false" />
+    <!-- Everything else stays cleartext-blocked and uses standard trust anchors -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
 </network-security-config>
+
