@@ -10,29 +10,28 @@ class AppConfig {
   /// Singleton instance.
   static final AppConfig instance = AppConfig._();
 
-  /// Current environment. Change this for different build targets.
-  static const AppEnvironment environment = AppEnvironment.development;
+  /// Current environment. Set to production for Demo v1 builds connecting to Railway.
+  /// Switch to AppEnvironment.development for local localhost/emulator testing.
+  static const AppEnvironment environment = AppEnvironment.production;
 
   /// Whether the app is running in debug/demo mode.
   static bool get isDevelopment => environment == AppEnvironment.development;
 
   /// Whether to use mock data instead of real API calls.
-  /// Set to false now that the backend is live and auth is implemented.
+  /// Set to false now that the backend is live on Railway.
   static const bool useMockData = false;
 
   /// The LAN IP of the development machine running the backend.
-  /// Used when running on a physical device connected to the same Wi-Fi.
+  /// Used when running in development mode on a physical device connected to the same Wi-Fi.
   /// Change this to your machine's local IP address (e.g. 192.168.1.5).
   static const String _devLanIp = '192.168.1.5';
 
   /// Custom backend URL provided at build/runtime via `--dart-define=BACKEND_URL=...`
   static const String _customBackendUrl = String.fromEnvironment('BACKEND_URL');
 
-  /// Production / Railway deployed backend API URL.
-  /// Replace with your actual Railway domain after deployment, e.g.:
-  /// https://ruralcare-backend-production.up.railway.app/api/v1
+  /// Production / Railway deployed backend API URL for RuralCare Demo v1.
   static const String railwayProductionUrl =
-      'https://ruralcare-backend-production.up.railway.app/api/v1';
+      'https://ruralcareapp-production.up.railway.app/api/v1';
 
   /// Resolves the backend API base URL at runtime based on platform.
   ///

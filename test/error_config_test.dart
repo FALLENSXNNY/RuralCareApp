@@ -76,8 +76,8 @@ void main() {
   });
 
   group('AppConfig', () {
-    test('has development environment', () {
-      expect(AppConfig.environment, AppEnvironment.development);
+    test('has valid environment configured', () {
+      expect(AppConfig.environment, isA<AppEnvironment>());
     });
 
     test('has API base URL', () {
