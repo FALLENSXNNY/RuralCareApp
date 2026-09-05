@@ -78,6 +78,48 @@ const patientSchema = new mongoose.Schema(
             default: [],
         },
 
+        isPregnant: {
+            type: Boolean,
+            default: false,
+        },
+
+        gestationalWeek: {
+            type: Number,
+            default: null,
+            min: 1,
+            max: 42,
+        },
+
+        edd: {
+            type: String,
+            default: '',
+            trim: true,
+        },
+
+        emergencyContactName: {
+            type: String,
+            default: '',
+            trim: true,
+        },
+
+        emergencyContactPhone: {
+            type: String,
+            default: '',
+            trim: true,
+        },
+
+        abhaId: {
+            type: String,
+            default: '',
+            trim: true,
+        },
+
+        preferredLanguage: {
+            type: String,
+            default: 'en',
+            trim: true,
+        },
+
         // Role is fixed server-side. Clients cannot set or change it.
         role: {
             type: String,

@@ -159,6 +159,76 @@ class PatientProfileScreen extends ConsumerWidget {
 
           const SizedBox(height: 16),
 
+          // Maternal & Pregnancy Care Card (for pregnant patients)
+          if (patient.gender.toLowerCase() == 'female' && patient.isPregnant) ...[
+            SectionCard(
+              onTap: () => context.go(AppRoutes.pregnancy),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFCE4EC),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.pregnant_woman_rounded,
+                          color: Color(0xFFC2185B),
+                          size: 26,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.pregnancyTitle,
+                              style: AppTextStyles.titleMedium.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF880E4F),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${l10n.currentWeek(patient.gestationalWeek ?? 24)} · ${_getTrimester(patient.gestationalWeek ?? 24)}',
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: const Color(0xFFC2185B),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_forward_ios,
+                          size: 16, color: Color(0xFFC2185B)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8BBD0).withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '🌸 ${l10n.yesPregnant} — Tap to view ANC checkups, nutrition guides & fetal tracker.',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: const Color(0xFF880E4F),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+
           // Basic medical info
           SectionCard(
             child: Column(
@@ -197,12 +267,14 @@ class PatientProfileScreen extends ConsumerWidget {
                     AppColors.primary,
                   ),
                 ],
-                if (patient.gender.toLowerCase() == 'female' && patient.isPregnant) ...[
+                if (patient.gender.toLowerCase() == 'female') ...[
                   const Divider(height: 24),
                   _profileRow(
                     Icons.pregnant_woman_rounded,
                     l10n.pregnancyTitle,
-                    '${l10n.yesPregnant} (${l10n.currentWeek(patient.gestationalWeek ?? 24)})',
+                    patient.isPregnant
+                        ? '${l10n.yesPregnant} (${l10n.currentWeek(patient.gestationalWeek ?? 24)})'
+                        : l10n.notPregnant,
                     const Color(0xFFC2185B),
                   ),
                 ],
@@ -317,16 +389,25 @@ class PatientProfileScreen extends ConsumerWidget {
 
   Widget _settingsTile(IconData icon, String title, String subtitle,
       {VoidCallback? onTap}) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: AppColors.primary, size: 22),
-      title: Text(title, style: AppTextStyles.titleSmall),
-      subtitle: Text(subtitle,
-          style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted)),
-      trailing:
-          const Icon(Icons.chevron_right, color: AppColors.textMuted, size: 20),
-      onTap: onTap,
-      dense: true,
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: Icon(icon, color: AppColors.primary, size: 22),
+        title: Text(title, style: AppTextStyles.titleSmall),
+        subtitle: Text(subtitle,
+            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted)),
+        trailing:
+            const Icon(Icons.chevron_right, color: AppColors.textMuted, size: 20),
+        onTap: onTap,
+        dense: true,
+      ),
     );
+  }
+
+  String _getTrimester(int week) {
+    if (week <= 12) return '1st Trimester';
+    if (week <= 27) return '2nd Trimester';
+    return '3rd Trimester';
   }
 }

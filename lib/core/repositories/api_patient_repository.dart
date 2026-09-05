@@ -34,7 +34,30 @@ class ApiPatientRepository implements PatientRepository {
             response.statusCode, 'Could not load your profile.');
       }
 
-      final patient = Patient.fromJson(_extractPatient(response.data));
+      final serverPatient = Patient.fromJson(_extractPatient(response.data));
+      final cached = getLocalPatient();
+      final patient = cached == null
+          ? serverPatient
+          : cached.copyWith(
+              id: serverPatient.id.isNotEmpty ? serverPatient.id : cached.id,
+              name: serverPatient.name.isNotEmpty ? serverPatient.name : cached.name,
+              phone: serverPatient.phone.isNotEmpty ? serverPatient.phone : cached.phone,
+              age: serverPatient.age > 0 ? serverPatient.age : cached.age,
+              gender: serverPatient.gender.isNotEmpty ? serverPatient.gender : cached.gender,
+              isPregnant: serverPatient.isPregnant || cached.isPregnant,
+              gestationalWeek: serverPatient.gestationalWeek ?? cached.gestationalWeek,
+              edd: serverPatient.edd ?? cached.edd,
+              village: serverPatient.village.isNotEmpty ? serverPatient.village : cached.village,
+              district: serverPatient.district.isNotEmpty ? serverPatient.district : cached.district,
+              state: serverPatient.state.isNotEmpty ? serverPatient.state : cached.state,
+              bloodGroup: serverPatient.bloodGroup.isNotEmpty ? serverPatient.bloodGroup : cached.bloodGroup,
+              emergencyContactName: serverPatient.emergencyContactName.isNotEmpty ? serverPatient.emergencyContactName : cached.emergencyContactName,
+              emergencyContactPhone: serverPatient.emergencyContactPhone.isNotEmpty ? serverPatient.emergencyContactPhone : cached.emergencyContactPhone,
+              abhaId: serverPatient.abhaId.isNotEmpty ? serverPatient.abhaId : cached.abhaId,
+              preferredLanguage: serverPatient.preferredLanguage.isNotEmpty ? serverPatient.preferredLanguage : cached.preferredLanguage,
+              allergies: serverPatient.allergies.isNotEmpty ? serverPatient.allergies : cached.allergies,
+              conditions: serverPatient.conditions.isNotEmpty ? serverPatient.conditions : cached.conditions,
+            );
       await savePatientLocally(patient);
       return patient;
     } on AppException catch (e) {
@@ -64,8 +87,30 @@ class ApiPatientRepository implements PatientRepository {
     }
 
     final updated = Patient.fromJson(_extractPatient(response.data));
-    await savePatientLocally(updated);
-    return updated;
+    final merged = patient.copyWith(
+      id: updated.id.isNotEmpty ? updated.id : patient.id,
+      name: updated.name.isNotEmpty ? updated.name : patient.name,
+      phone: updated.phone.isNotEmpty ? updated.phone : patient.phone,
+      age: updated.age > 0 ? updated.age : patient.age,
+      gender: updated.gender.isNotEmpty ? updated.gender : patient.gender,
+      isPregnant: patient.isPregnant,
+      gestationalWeek: patient.isPregnant
+          ? (patient.gestationalWeek ?? updated.gestationalWeek)
+          : null,
+      edd: patient.edd ?? updated.edd,
+      village: updated.village.isNotEmpty ? updated.village : patient.village,
+      district: updated.district.isNotEmpty ? updated.district : patient.district,
+      state: updated.state.isNotEmpty ? updated.state : patient.state,
+      bloodGroup: updated.bloodGroup.isNotEmpty ? updated.bloodGroup : patient.bloodGroup,
+      emergencyContactName: updated.emergencyContactName.isNotEmpty ? updated.emergencyContactName : patient.emergencyContactName,
+      emergencyContactPhone: updated.emergencyContactPhone.isNotEmpty ? updated.emergencyContactPhone : patient.emergencyContactPhone,
+      abhaId: updated.abhaId.isNotEmpty ? updated.abhaId : patient.abhaId,
+      preferredLanguage: updated.preferredLanguage.isNotEmpty ? updated.preferredLanguage : patient.preferredLanguage,
+      allergies: updated.allergies.isNotEmpty ? updated.allergies : patient.allergies,
+      conditions: updated.conditions.isNotEmpty ? updated.conditions : patient.conditions,
+    );
+    await savePatientLocally(merged);
+    return merged;
   }
 
   @override

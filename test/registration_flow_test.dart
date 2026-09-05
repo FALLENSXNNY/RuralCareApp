@@ -5,7 +5,10 @@ import 'package:ruralcare/core/models/patient.dart';
 import 'package:ruralcare/core/providers/app_providers.dart';
 import 'package:ruralcare/features/home/screens/home_shell.dart';
 import 'package:ruralcare/core/localization/app_localizations.dart';
+import 'package:ruralcare/core/storage/local_storage_service.dart';
+import 'package:ruralcare/features/profile/screens/patient_profile_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   group('Patient Registration & Conditional Pregnancy Tab Tests', () {
@@ -196,6 +199,58 @@ void main() {
       final navBar = tester.widget<NavigationBar>(find.byType(NavigationBar));
       expect(navBar.destinations.length, 4);
       expect(find.byIcon(Icons.pregnant_woman_rounded), findsNothing);
+    });
+
+    testWidgets('PatientProfileScreen displays pregnancy card and status for pregnant female',
+        (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final storage = await LocalStorageService.init();
+
+      final pregnantFemale = Patient(
+        id: 'P-1',
+        name: 'Sunita Devi',
+        phone: '9999999999',
+        age: 25,
+        gender: 'Female',
+        village: 'Rampur',
+        district: 'Varanasi',
+        state: 'Uttar Pradesh',
+        bloodGroup: 'B+',
+        allergies: const [],
+        conditions: const [],
+        isPregnant: true,
+        gestationalWeek: 20,
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            localStorageProvider.overrideWithValue(storage),
+            currentPatientProvider
+                .overrideWith((ref) => Future.value(pregnantFemale)),
+          ],
+          child: const MaterialApp(
+            localizationsDelegates: [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: [
+              Locale('en'),
+              Locale('hi'),
+              Locale('bn'),
+            ],
+            home: PatientProfileScreen(),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.text('Sunita Devi'), findsOneWidget);
+      expect(find.text('Mother & Child Care'), findsWidgets);
+      expect(find.textContaining('Week 20'), findsWidgets);
     });
   });
 }

@@ -9,10 +9,17 @@ const PROFILE_FIELDS = [
     'fullName',
     'age',
     'gender',
+    'isPregnant',
+    'gestationalWeek',
+    'edd',
     'village',
     'district',
     'state',
     'bloodGroup',
+    'emergencyContactName',
+    'emergencyContactPhone',
+    'abhaId',
+    'preferredLanguage',
     'allergies',
     'conditions',
 ];
@@ -73,9 +80,30 @@ async function findByUid(firebaseUid) {
 async function updateProfile(firebaseUid, updates) {
     const clean = {};
 
-    // Support 'name' alias from client JSON alongside canonical 'fullName'
+    // Support field aliases from client JSON
     if (updates.name !== undefined && updates.fullName === undefined) {
         clean.fullName = updates.name;
+    }
+    if (updates.is_pregnant !== undefined && updates.isPregnant === undefined) {
+        clean.isPregnant = updates.is_pregnant;
+    }
+    if (updates.gestational_week !== undefined && updates.gestationalWeek === undefined) {
+        clean.gestationalWeek = updates.gestational_week;
+    }
+    if (updates.estimated_due_date !== undefined && updates.edd === undefined) {
+        clean.edd = updates.estimated_due_date;
+    }
+    if (updates.emergency_contact_name !== undefined && updates.emergencyContactName === undefined) {
+        clean.emergencyContactName = updates.emergency_contact_name;
+    }
+    if (updates.emergency_contact_phone !== undefined && updates.emergencyContactPhone === undefined) {
+        clean.emergencyContactPhone = updates.emergency_contact_phone;
+    }
+    if (updates.abha_id !== undefined && updates.abhaId === undefined) {
+        clean.abhaId = updates.abha_id;
+    }
+    if (updates.preferred_language !== undefined && updates.preferredLanguage === undefined) {
+        clean.preferredLanguage = updates.preferred_language;
     }
 
     for (const key of Object.keys(updates)) {

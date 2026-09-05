@@ -38,6 +38,13 @@ const PATIENT_DOC = {
     fullName: 'Sunita Devi',
     age: 34,
     gender: 'Female',
+    isPregnant: false,
+    gestationalWeek: null,
+    edd: '',
+    emergencyContactName: '',
+    emergencyContactPhone: '',
+    abhaId: '',
+    preferredLanguage: 'en',
     village: 'Koregaon',
     district: 'Satara',
     state: 'Maharashtra',
@@ -304,6 +311,43 @@ describe('PUT /api/v1/patients/me — profile update (Phase 3)', () => {
             village: 'Wai',
             allergies: ['Sulfa drugs'],
         });
+    });
+
+    test('updates pregnancy and contact fields successfully', async () => {
+        verifyIdToken.mockResolvedValue(VALID_TOKEN_PAYLOAD);
+        Patient.findOneAndUpdate.mockReturnValue({
+            lean: jest.fn().mockResolvedValue({
+                ...PATIENT_DOC,
+                fullName: 'Rani Kumari',
+                gender: 'Female',
+                isPregnant: true,
+                gestationalWeek: 20,
+                emergencyContactName: 'Ramesh (Husband)',
+                emergencyContactPhone: '9876543210',
+            }),
+        });
+
+        const res = await request(app)
+            .put('/api/v1/patients/me')
+            .set('Authorization', 'Bearer valid-token')
+            .send({
+                name: 'Rani Kumari',
+                gender: 'Female',
+                isPregnant: true,
+                gestationalWeek: 20,
+                emergencyContactName: 'Ramesh (Husband)',
+                emergencyContactPhone: '9876543210',
+            });
+
+        expect(res.status).toBe(200);
+        expect(res.body.patient.isPregnant).toBe(true);
+        expect(res.body.patient.gestationalWeek).toBe(20);
+        expect(res.body.patient.emergencyContactName).toBe('Ramesh (Husband)');
+
+        const { $set } = Patient.findOneAndUpdate.mock.calls[0][1];
+        expect($set.isPregnant).toBe(true);
+        expect($set.gestationalWeek).toBe(20);
+        expect($set.emergencyContactName).toBe('Ramesh (Husband)');
     });
 
     test('ignores identity/role fields sent in the body', async () => {

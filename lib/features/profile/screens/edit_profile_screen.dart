@@ -8,9 +8,12 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/error/app_exception.dart';
 import '../../../core/models/patient.dart';
+import '../../../core/models/pregnancy.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../../core/storage/local_storage_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utilities/pregnancy_calculator.dart';
 import '../../../core/widgets/ruralcare_button.dart';
 import '../../../core/widgets/section_card.dart';
 
@@ -141,12 +144,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         .map((e) => e.key)
         .toList();
 
-    final updated = currentPatient.copyWith(
+    final updated = Patient(
+      id: currentPatient.id,
       name: _nameController.text.trim(),
+      phone: currentPatient.phone,
       age: int.tryParse(_ageController.text.trim()) ?? currentPatient.age,
       gender: _selectedGender,
       isPregnant: _selectedGender == 'Female' ? _isPregnant : false,
-      gestationalWeek: (_selectedGender == 'Female' && _isPregnant) ? _gestationalWeek : null,
+      gestationalWeek: (_selectedGender == 'Female' && _isPregnant)
+          ? _gestationalWeek
+          : null,
+      edd: (_selectedGender == 'Female' && _isPregnant)
+          ? currentPatient.edd
+          : null,
       emergencyContactName: _emergencyNameController.text.trim(),
       emergencyContactPhone: _emergencyPhoneController.text.trim(),
       abhaId: _abhaController.text.trim(),
@@ -154,14 +164,56 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       district: _districtController.text.trim(),
       state: _stateController.text.trim(),
       bloodGroup: _selectedBloodGroup,
+      preferredLanguage: currentPatient.preferredLanguage,
       allergies: selectedAllergies,
       conditions: selectedConditions,
     );
 
+    // If pregnant, also initialize/update PregnancyProfile
+    if (updated.isPregnant && updated.gestationalWeek != null) {
+      try {
+        final pregRepo = ref.read(pregnancyRepositoryProvider);
+        final now = DateTime.now();
+        final daysRemaining =
+            ((40 - updated.gestationalWeek!) * 7).clamp(0, 280);
+        final calculatedEdd = now.add(Duration(days: daysRemaining));
+        final calculatedLmp =
+            PregnancyCalculator.calculateLmpFromEdd(calculatedEdd);
+
+        final pregProfile = PregnancyProfile(
+          id: 'preg_${updated.id}',
+          patientId: updated.id,
+          isPregnant: true,
+          estimatedDueDate: calculatedEdd,
+          lastMenstrualPeriod: calculatedLmp,
+          currentWeek: updated.gestationalWeek!,
+          riskLevel: PregnancyRiskLevel.normal,
+          primaryHealthCenter:
+              '${updated.district} PHC / Sub-district Hospital',
+          doctorOrAshaWorker: updated.emergencyContactName.isNotEmpty
+              ? '${updated.emergencyContactName} (Contact)'
+              : 'Sunita Tai (ASHA Worker)',
+          notes:
+              'Antenatal monitoring active. Gestational Week ${updated.gestationalWeek}.',
+          updatedAt: now,
+        );
+        await pregRepo.savePregnancyProfile(pregProfile);
+      } catch (_) {}
+    }
+
+    // Save locally first to guarantee immediate UI updates
+    await LocalStorageService.instance.savePatientProfile(updated);
+    ref.invalidate(currentPatientProvider);
+    ref.invalidate(pregnancyProfileProvider);
+    ref.read(authNotifierProvider).notify();
+
     try {
       final repo = ref.read(patientRepositoryProvider);
-      await repo.updatePatient(updated);
+      final saved = await repo.updatePatient(updated);
+      await LocalStorageService.instance.savePatientProfile(saved);
       ref.invalidate(currentPatientProvider);
+      ref.invalidate(pregnancyProfileProvider);
+      ref.read(authNotifierProvider).notify();
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -172,12 +224,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       );
       context.pop();
     } on AppException catch (e) {
+      ref.invalidate(currentPatientProvider);
+      ref.invalidate(pregnancyProfileProvider);
+      ref.read(authNotifierProvider).notify();
       if (!mounted) return;
       setState(() {
         _isLoading = false;
         _errorMessage = e.message;
       });
     } catch (e) {
+      ref.invalidate(currentPatientProvider);
+      ref.invalidate(pregnancyProfileProvider);
+      ref.read(authNotifierProvider).notify();
       if (!mounted) return;
       setState(() {
         _isLoading = false;
@@ -326,66 +384,135 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           // Female Pregnancy Section
                           if (_selectedGender == 'Female') ...[
                             const SizedBox(height: 16),
-                            Container(
-                              padding: const EdgeInsets.all(12),
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 250),
+                              padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFCE4EC),
-                                borderRadius: BorderRadius.circular(8),
+                                color: _isPregnant
+                                    ? const Color(0xFFFCE4EC)
+                                    : AppColors.surfaceContainerLow,
+                                borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: const Color(0xFFF48FB1),
-                                  width: 0.8,
+                                  color: _isPregnant
+                                      ? const Color(0xFFE91E63)
+                                      : AppColors.outlineVariant,
+                                  width: _isPregnant ? 1.5 : 1.0,
                                 ),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  InkWell(
+                                    onTap: () => setState(() => _isPregnant = !_isPregnant),
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(6),
+                                          decoration: BoxDecoration(
+                                            color: _isPregnant
+                                                ? const Color(0xFFE91E63)
+                                                : AppColors.primaryContainer,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(
+                                            Icons.pregnant_woman_rounded,
+                                            size: 20,
+                                            color: _isPregnant
+                                                ? Colors.white
+                                                : AppColors.primary,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Text(
+                                            'Are you currently pregnant?',
+                                            style: TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                              color: _isPregnant
+                                                  ? const Color(0xFF880E4F)
+                                                  : AppColors.onSurface,
+                                            ),
+                                          ),
+                                        ),
+                                        Switch(
+                                          value: _isPregnant,
+                                          activeColor: const Color(0xFFE91E63),
+                                          onChanged: (val) =>
+                                              setState(() => _isPregnant = val),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+
+                                  // Quick Yes / No Choice Chips
                                   Row(
                                     children: [
-                                      const Icon(
-                                        Icons.pregnant_woman_rounded,
-                                        color: Color(0xFFC2185B),
-                                        size: 22,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      const Expanded(
-                                        child: Text(
-                                          'Are you currently pregnant?',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                            color: Color(0xFF880E4F),
+                                      Expanded(
+                                        child: ChoiceChip(
+                                          label: const Text('🌸 Yes, Pregnant'),
+                                          selected: _isPregnant,
+                                          onSelected: (_) =>
+                                              setState(() => _isPregnant = true),
+                                          selectedColor: const Color(0xFFE91E63),
+                                          labelStyle: AppTextStyles.labelMedium.copyWith(
+                                            color: _isPregnant
+                                                ? Colors.white
+                                                : AppColors.onSurface,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(8),
                                           ),
                                         ),
                                       ),
-                                      Switch.adaptive(
-                                        value: _isPregnant,
-                                        activeThumbColor: const Color(0xFFC2185B),
-                                        onChanged: (val) =>
-                                            setState(() => _isPregnant = val),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: ChoiceChip(
+                                          label: const Text('Not Pregnant'),
+                                          selected: !_isPregnant,
+                                          onSelected: (_) =>
+                                              setState(() => _isPregnant = false),
+                                          selectedColor: AppColors.primary,
+                                          labelStyle: AppTextStyles.labelMedium.copyWith(
+                                            color: !_isPregnant
+                                                ? Colors.white
+                                                : AppColors.onSurface,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                        ),
                                       ),
                                     ],
                                   ),
+
                                   if (_isPregnant) ...[
-                                    const SizedBox(height: 12),
+                                    const SizedBox(height: 14),
+                                    const Divider(),
+                                    const SizedBox(height: 8),
                                     Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          'Gestational Week: $_gestationalWeek',
+                                          'Gestational Week: Week $_gestationalWeek (Month ${((_gestationalWeek / 4.3).ceil()).clamp(1, 9)})',
                                           style: const TextStyle(
                                             fontSize: 13,
-                                            fontWeight: FontWeight.w500,
+                                            fontWeight: FontWeight.bold,
                                             color: Color(0xFF880E4F),
                                           ),
                                         ),
                                         Container(
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 8,
-                                            vertical: 2,
+                                            vertical: 3,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: const Color(0xFFC2185B),
+                                            color: const Color(0xFFE91E63),
                                             borderRadius:
                                                 BorderRadius.circular(12),
                                           ),
@@ -396,9 +523,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                                     ? '2nd Trimester'
                                                     : '3rd Trimester',
                                             style: const TextStyle(
-                                              fontSize: 11,
+                                              fontSize: 10,
                                               color: Colors.white,
-                                              fontWeight: FontWeight.w600,
+                                              fontWeight: FontWeight.bold,
                                             ),
                                           ),
                                         ),
@@ -409,7 +536,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                       min: 1,
                                       max: 40,
                                       divisions: 39,
-                                      activeColor: const Color(0xFFC2185B),
+                                      activeColor: const Color(0xFFE91E63),
                                       inactiveColor: const Color(0xFFF8BBD0),
                                       label: 'Week $_gestationalWeek',
                                       onChanged: (val) => setState(
