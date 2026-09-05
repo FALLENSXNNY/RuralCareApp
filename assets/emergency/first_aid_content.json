@@ -10,7 +10,8 @@
       {
         "step": 1,
         "title": "Check Response & Breathing",
-        "body": "Tap shoulders firmly and shout: 'Are you OK?'. Check chest movement for 5 seconds."
+        "body": "Tap shoulders firmly and shout: 'Are you OK?'. Check chest movement for 5 seconds.",
+        "illustrationAsset": "assets/emergency/illustrations/cpr_check_response.jpg"
       },
       {
         "step": 2,
@@ -20,17 +21,20 @@
       {
         "step": 3,
         "title": "Place Hands in Center of Chest",
-        "body": "Place heel of one hand in center of chest between nipples. Interlock other hand on top."
+        "body": "Place heel of one hand in center of chest between nipples. Interlock other hand on top.",
+        "illustrationAsset": "assets/emergency/illustrations/cpr_hand_placement.jpg"
       },
       {
         "step": 4,
         "title": "Push Hard & Fast (100–120 bpm)",
-        "body": "Push down 5–6 cm deep at 100 to 120 beats per minute. Allow chest to fully recoil."
+        "body": "Push down 5–6 cm deep at 100 to 120 beats per minute. Allow chest to fully recoil.",
+        "illustrationAsset": "assets/emergency/illustrations/cpr_chest_compression.jpg"
       },
       {
         "step": 5,
         "title": "Give 2 Rescue Breaths (If Trained)",
-        "body": "Tilt head back, pinch nose, and blow 2 breaths. Continue 30 compressions and 2 breaths until help arrives."
+        "body": "Tilt head back, pinch nose, and blow 2 breaths. Continue 30 compressions and 2 breaths until help arrives.",
+        "illustrationAsset": "assets/emergency/illustrations/cpr_rescue_breath.jpg"
       }
     ],
     "dos": [
@@ -61,7 +65,8 @@
       {
         "step": 2,
         "title": "Open Airway & Turn on Side",
-        "body": "Gently tilt head back and lift chin. Turn onto side (recovery position) if breathing."
+        "body": "Gently tilt head back and lift chin. Turn onto side (recovery position) if breathing.",
+        "illustrationAsset": "assets/emergency/illustrations/recovery_position.jpg"
       },
       {
         "step": 3,
@@ -97,12 +102,14 @@
       {
         "step": 2,
         "title": "Deliver 5 Firm Back Blows",
-        "body": "Lean person forward and deliver 5 firm blows between shoulder blades with heel of hand."
+        "body": "Lean person forward and deliver 5 firm blows between shoulder blades with heel of hand.",
+        "illustrationAsset": "assets/emergency/illustrations/choking_back_blows.jpg"
       },
       {
         "step": 3,
         "title": "Perform 5 Abdominal Thrusts (Heimlich)",
-        "body": "Stand behind person, place fist above belly button, and pull sharply inward and upward 5 times."
+        "body": "Stand behind person, place fist above belly button, and pull sharply inward and upward 5 times.",
+        "illustrationAsset": "assets/emergency/illustrations/heimlich_maneuver.jpg"
       },
       {
         "step": 4,
@@ -132,12 +139,14 @@
       {
         "step": 1,
         "title": "Apply Direct Firm Pressure",
-        "body": "Press firmly on the bleeding wound using a clean cloth, sterile gauze, or bare hands."
+        "body": "Press firmly on the bleeding wound using a clean cloth, sterile gauze, or bare hands.",
+        "illustrationAsset": "assets/emergency/illustrations/apply_pressure_wound.jpg"
       },
       {
         "step": 2,
         "title": "Elevate Wounded Limb",
-        "body": "Raise the bleeding arm or leg above heart level while continuing firm pressure."
+        "body": "Raise the bleeding arm or leg above heart level while continuing firm pressure.",
+        "illustrationAsset": "assets/emergency/illustrations/elevate_limb.jpg"
       },
       {
         "step": 3,
@@ -173,7 +182,8 @@
       {
         "step": 1,
         "title": "Cool with Running Tap Water",
-        "body": "Hold burn under cool running tap water for 15–20 minutes immediately. Never use ice."
+        "body": "Hold burn under cool running tap water for 15–20 minutes immediately. Never use ice.",
+        "illustrationAsset": "assets/emergency/illustrations/burn_cool_water.jpg"
       },
       {
         "step": 2,
@@ -218,12 +228,14 @@
       {
         "step": 2,
         "title": "Apply Temporary Rigid Splint",
-        "body": "Use a rolled towel, cardboard, or wooden stick to immobilize joints above and below fracture."
+        "body": "Use a rolled towel, cardboard, or wooden stick to immobilize joints above and below fracture.",
+        "illustrationAsset": "assets/emergency/illustrations/apply_splint.jpg"
       },
       {
         "step": 3,
         "title": "Apply Ice Pack Wrapped in Cloth",
-        "body": "Place an ice pack wrapped in a towel on the area for 15 minutes to control swelling."
+        "body": "Place an ice pack wrapped in a towel on the area for 15 minutes to control swelling.",
+        "illustrationAsset": "assets/emergency/illustrations/fracture_ice_pack.png"
       },
       {
         "step": 4,
@@ -263,7 +275,8 @@
       {
         "step": 3,
         "title": "Immobilize Limb Below Heart",
-        "body": "Keep bitten limb lower than heart level. Secure with a loose splint or sling."
+        "body": "Keep bitten limb lower than heart level. Secure with a loose splint or sling.",
+        "illustrationAsset": "assets/emergency/illustrations/snake_immobilize_limb.jpg"
       },
       {
         "step": 4,
@@ -300,12 +313,14 @@
       {
         "step": 1,
         "title": "Turn Off Power Source",
-        "body": "Immediately switch off the main circuit breaker or unplug the wire. Do not touch victim."
+        "body": "Immediately switch off the main circuit breaker or unplug the wire. Do not touch victim.",
+        "illustrationAsset": "assets/emergency/illustrations/switch_off_power.jpg"
       },
       {
         "step": 2,
         "title": "Separate with Non-Conductive Item",
-        "body": "If power cannot be cut, push wire away using dry wooden stick, broom, plastic, or rubber."
+        "body": "If power cannot be cut, push wire away using dry wooden stick, broom, plastic, or rubber.",
+        "illustrationAsset": "assets/emergency/illustrations/electric_wooden_stick.png"
       },
       {
         "step": 3,
@@ -346,7 +361,8 @@
       {
         "step": 2,
         "title": "Rapidly Cool the Skin",
-        "body": "Sponge cool water all over skin. Place wet cloths or ice packs on neck, armpits, and groin."
+        "body": "Sponge cool water all over skin. Place wet cloths or ice packs on neck, armpits, and groin.",
+        "illustrationAsset": "assets/emergency/illustrations/heat_stroke_cool_skin.png"
       },
       {
         "step": 3,
@@ -382,7 +398,8 @@
       {
         "step": 1,
         "title": "Make Person Sit Upright",
-        "body": "Help person sit comfortably leaning against wall. Loosen tight collar and waist."
+        "body": "Help person sit comfortably leaning against wall. Loosen tight collar and waist.",
+        "illustrationAsset": "assets/emergency/illustrations/chest_pain_sit_upright.png"
       },
       {
         "step": 2,
@@ -427,7 +444,8 @@
       {
         "step": 2,
         "title": "Strip Clothes & Wash Skin",
-        "body": "Remove contaminated clothes and wash skin with soap and plenty of running water."
+        "body": "Remove contaminated clothes and wash skin with soap and plenty of running water.",
+        "illustrationAsset": "assets/emergency/illustrations/poison_wash_skin.png"
       },
       {
         "step": 3,
@@ -462,7 +480,8 @@
       {
         "step": 1,
         "title": "Tepid Water Sponging",
-        "body": "Wipe forehead, neck, chest, and arms with cloth dipped in lukewarm (not ice) water."
+        "body": "Wipe forehead, neck, chest, and arms with cloth dipped in lukewarm (not ice) water.",
+        "illustrationAsset": "assets/emergency/illustrations/fever_sponge_forehead.png"
       },
       {
         "step": 2,
@@ -507,7 +526,8 @@
       {
         "step": 2,
         "title": "Rest on Left Side (L-Position)",
-        "body": "Keep the mother resting on her left side with knees bent. This relieves pressure on major blood vessels and maximizes blood flow to the baby."
+        "body": "Keep the mother resting on her left side with knees bent. This relieves pressure on major blood vessels and maximizes blood flow to the baby.",
+        "illustrationAsset": "assets/emergency/illustrations/pregnancy_left_side.png"
       },
       {
         "step": 3,
@@ -556,7 +576,8 @@
       {
         "step": 2,
         "title": "Prepare Clean, Warm Space & Wash Hands",
-        "body": "Wash hands with soap and water. Place clean plastic sheets, cloth, or towels under the mother in a warm, draft-free room."
+        "body": "Wash hands with soap and water. Place clean plastic sheets, cloth, or towels under the mother in a warm, draft-free room.",
+        "illustrationAsset": "assets/emergency/illustrations/wash_hands_clean.png"
       },
       {
         "step": 3,

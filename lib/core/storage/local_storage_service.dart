@@ -136,6 +136,15 @@ class LocalStorageService {
     await _prefs.setString(_keyAppLanguage, language);
   }
 
+  static const _keyHasSelectedLanguage = 'has_selected_language';
+
+  bool get hasSelectedLanguage =>
+      _prefs.getBool(_keyHasSelectedLanguage) ?? false;
+
+  Future<void> setHasSelectedLanguage(bool value) async {
+    await _prefs.setBool(_keyHasSelectedLanguage, value);
+  }
+
   // ── Pregnancy profile & ANC care ────────────────────────────────────────
 
   static const _keyPregnancyProfile = 'pregnancy_profile';

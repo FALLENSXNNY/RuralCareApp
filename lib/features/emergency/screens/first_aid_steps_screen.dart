@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' as services;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -409,13 +410,54 @@ class _FirstAidStepsScreenState extends ConsumerState<FirstAidStepsScreen> {
                   const SizedBox(height: 14),
                   Expanded(
                     child: SingleChildScrollView(
-                      child: Text(
-                        step.body,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
-                          height: 1.6,
-                          fontSize: 16,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            step.body,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: AppColors.textSecondary,
+                              height: 1.6,
+                              fontSize: 16,
+                            ),
+                          ),
+                          if (step.illustrationAsset != null) ...[
+                            const SizedBox(height: 16),
+                            Container(
+                              width: double.infinity,
+                              constraints: const BoxConstraints(
+                                maxHeight: 200,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: AppColors.border.withValues(alpha: 0.6),
+                                  width: 1,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.04),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: step.illustrationAsset!.toLowerCase().endsWith('.svg')
+                                  ? SvgPicture.asset(
+                                      step.illustrationAsset!,
+                                      fit: BoxFit.contain,
+                                    )
+                                  : Image.asset(
+                                      step.illustrationAsset!,
+                                      fit: BoxFit.contain,
+                                      errorBuilder: (context, error, stackTrace) =>
+                                          const SizedBox.shrink(),
+                                    ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                   ),

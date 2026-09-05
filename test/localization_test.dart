@@ -236,5 +236,14 @@ void main() {
       await notifier.setLocale('invalid_code');
       expect(notifier.state.languageCode, equals('bn'));
     });
+
+    test('LocalStorageService hasSelectedLanguage defaults to false and persists true', () async {
+      SharedPreferences.setMockInitialValues({});
+      final storage = await LocalStorageService.init();
+
+      expect(storage.hasSelectedLanguage, isFalse);
+      await storage.setHasSelectedLanguage(true);
+      expect(storage.hasSelectedLanguage, isTrue);
+    });
   });
 }

@@ -72,6 +72,7 @@ flutter:
 
   assets:
     - assets/emergency/
+    - assets/emergency/illustrations/
     - assets/images/
     - assets/icons/
     - assets/mock/

@@ -5,12 +5,14 @@ class FirstAidStep {
     required this.title,
     required this.body,
     this.isCaution = false,
+    this.illustrationAsset,
   });
 
   final int step;
   final String title;
   final String body;
   final bool isCaution;
+  final String? illustrationAsset;
 
   factory FirstAidStep.fromJson(Map<String, dynamic> json) {
     return FirstAidStep(
@@ -18,6 +20,7 @@ class FirstAidStep {
       title: json['title'] as String? ?? '',
       body: json['body'] as String? ?? '',
       isCaution: json['isCaution'] as bool? ?? false,
+      illustrationAsset: json['illustrationAsset'] as String?,
     );
   }
 
@@ -26,6 +29,7 @@ class FirstAidStep {
         'title': title,
         'body': body,
         'isCaution': isCaution,
+        if (illustrationAsset != null) 'illustrationAsset': illustrationAsset,
       };
 }
 

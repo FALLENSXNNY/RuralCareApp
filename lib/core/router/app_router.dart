@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Onboarding
+import '../../features/onboarding/screens/language_selection_screen.dart';
 import '../../features/onboarding/screens/welcome_screen.dart';
 import '../../features/onboarding/screens/otp_login_screen.dart';
 import '../../features/onboarding/screens/registration_contact_screen.dart';
@@ -76,6 +77,7 @@ import '../storage/local_storage_service.dart';
 class AppRoutes {
   AppRoutes._();
 
+  static const String selectLanguage = '/language-select';
   static const String welcome = '/';
   static const String login = '/login';
   static const String registerContact = '/register/contact';
@@ -150,7 +152,9 @@ GoRouter createAppRouter(WidgetRef ref) {
   final authNotifier = ref.read(authNotifierProvider);
 
   return GoRouter(
-    initialLocation: AppRoutes.welcome,
+    initialLocation: LocalStorageService.instance.hasSelectedLanguage
+        ? AppRoutes.welcome
+        : AppRoutes.selectLanguage,
     refreshListenable: authNotifier,
 
     // ── Auth redirect guard ────────────────────────────────────────────────
@@ -166,16 +170,23 @@ GoRouter createAppRouter(WidgetRef ref) {
       final hasCompletedProfile =
           LocalStorageService.instance.patientProfile?.name.trim().isNotEmpty == true;
 
+      final hasSelectedLanguage =
+          LocalStorageService.instance.hasSelectedLanguage;
+      final isOnLanguageSelect = location == AppRoutes.selectLanguage;
       final isOnWelcomeOrLogin = location == AppRoutes.welcome ||
           location == AppRoutes.login;
       final isOnRegistration = location.startsWith('/register');
 
       if (!isLoggedIn) {
-        // Not authenticated — redirect to welcome if trying to access guarded routes.
-        if (!isOnWelcomeOrLogin && !isOnRegistration) {
-          return AppRoutes.welcome;
+        // If user hasn't selected language yet, start at language selection
+        if (!hasSelectedLanguage && !isOnLanguageSelect) {
+          return AppRoutes.selectLanguage;
         }
-        return null; // Allow welcome / login / register pages
+        // Not authenticated — redirect to welcome/language if trying to access guarded routes.
+        if (!isOnLanguageSelect && !isOnWelcomeOrLogin && !isOnRegistration) {
+          return hasSelectedLanguage ? AppRoutes.welcome : AppRoutes.selectLanguage;
+        }
+        return null; // Allow language select / welcome / login / register pages
       }
 
       // Authenticated user:
@@ -184,7 +195,7 @@ GoRouter createAppRouter(WidgetRef ref) {
         return AppRoutes.registerContact;
       }
 
-      if (isOnWelcomeOrLogin) {
+      if (isOnWelcomeOrLogin || isOnLanguageSelect) {
         // Already logged in — skip the auth screens.
         return (isNewUser && !hasCompletedProfile)
             ? AppRoutes.registerContact
@@ -196,6 +207,10 @@ GoRouter createAppRouter(WidgetRef ref) {
 
     routes: [
       // ── Onboarding (no shell) ────────────────────────────────────────────
+      GoRoute(
+        path: AppRoutes.selectLanguage,
+        builder: (context, state) => const LanguageSelectionScreen(),
+      ),
       GoRoute(
         path: AppRoutes.welcome,
         builder: (context, state) => const WelcomeScreen(),
