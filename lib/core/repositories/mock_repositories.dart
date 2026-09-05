@@ -214,18 +214,38 @@ class MockAIRepository implements AIRepository {
   Future<AiMessage> sendMessage(
     String message, {
     List<AiMessage>? history,
+    String? language,
   }) async {
     // Simulate realistic response time
     await Future.delayed(const Duration(milliseconds: 600));
 
-    final reply = AiMessage(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      text:
+    String replyText;
+    if (language == 'hi') {
+      replyText =
+          'आपके प्रश्न के लिए धन्यवाद। आपके मार्गदर्शन के लिए स्वास्थ्य जानकारी निम्नलिखित है:\n\n'
+          '• शांत वातावरण में विश्राम करें और पर्याप्त स्वच्छ पानी पिएं।\n'
+          '• अगले 24 घंटों में अपने लक्षणों पर बारीकी से नजर रखें।\n'
+          '• यदि लक्षण बने रहते हैं या बिगड़ते हैं, तो कृपया अपने नजदीकी प्राथमिक स्वास्थ्य केंद्र (PHC) जाएं।\n\n'
+          '**महत्वपूर्ण सूचना:** यह सामान्य स्वास्थ्य जानकारी है, चिकित्सीय निदान नहीं। कृपया डॉक्टर से सलाह लें।';
+    } else if (language == 'bn') {
+      replyText =
+          'আপনার প্রশ্নের জন্য ধন্যবাদ। আপনার অবগতির জন্য স্বাস্থ্য নির্দেশিকা নিচে দেওয়া হলো:\n\n'
+          '• একটি শান্ত জায়গায় বিশ্রাম নিন এবং পর্যাপ্ত বিশুদ্ধ জল পান করুন।\n'
+          '• পরবর্তী ২৪ ঘণ্টায় আপনার লক্ষণগুলির ওপর সতর্ক দৃষ্টি রাখুন।\n'
+          '• লক্ষণগুলি স্থায়ী হলে বা খারাপ হলে অবিলম্বে আপনার নিকটস্থ প্রাথমিক স্বাস্থ্য কেন্দ্রে (PHC) যান।\n\n'
+          '**গুরুত্বপূর্ণ বিজ্ঞপ্তি:** এটি সাধারণ স্বাস্থ্য নির্দেশিকা, চিকিৎসাগত রোগ নির্ণয় নয়। অনুগ্রহ করে একজন ডাক্তারের পরামর্শ নিন।';
+    } else {
+      replyText =
           'Thank you for your question. Here is health guidance for your consideration:\n\n'
           '• Rest in a quiet space and drink plenty of clean, safe water.\n'
           '• Monitor your symptoms closely over the next 24 hours.\n'
           '• If symptoms worsen or persist, please visit your local Primary Health Centre (PHC Koregaon).\n\n'
-          '**Important Notice:** This is general health information, not a formal medical diagnosis. Please consult a doctor or healthcare worker.',
+          '**Important Notice:** This is general health information, not a formal medical diagnosis. Please consult a doctor or healthcare worker.';
+    }
+
+    final reply = AiMessage(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      text: replyText,
       isAi: true,
       time: DateTime.now(),
     );

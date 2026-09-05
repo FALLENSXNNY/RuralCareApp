@@ -6,30 +6,40 @@ class EmergencyService {
   EmergencyService._();
   static final EmergencyService instance = EmergencyService._();
 
-  List<FirstAidTopic>? _cachedTopics;
+  final Map<String, List<FirstAidTopic>> _cachedTopicsByLang = {};
 
-  /// Loads all first aid topics from bundled asset JSON.
-  Future<List<FirstAidTopic>> loadTopics() async {
-    if (_cachedTopics != null && _cachedTopics!.isNotEmpty) {
-      return _cachedTopics!;
+  /// Loads all first aid topics from bundled asset JSON based on language code.
+  Future<List<FirstAidTopic>> loadTopics({String languageCode = 'en'}) async {
+    final lang = (languageCode == 'hi' || languageCode == 'bn') ? languageCode : 'en';
+
+    if (_cachedTopicsByLang[lang] != null && _cachedTopicsByLang[lang]!.isNotEmpty) {
+      return _cachedTopicsByLang[lang]!;
     }
 
     try {
-      final raw = await services.rootBundle
-          .loadString('assets/emergency/first_aid_content.json');
+      final assetPath = lang == 'en'
+          ? 'assets/emergency/first_aid_content.json'
+          : 'assets/emergency/first_aid_content_$lang.json';
+
+      final raw = await services.rootBundle.loadString(assetPath);
       final List<dynamic> list = jsonDecode(raw);
-      _cachedTopics = list
+      final parsed = list
           .map((item) => FirstAidTopic.fromJson(item as Map<String, dynamic>))
           .toList();
-      return _cachedTopics!;
+      _cachedTopicsByLang[lang] = parsed;
+      return parsed;
     } catch (_) {
+      // Fallback to English if localized JSON fails to load
+      if (lang != 'en') {
+        return loadTopics(languageCode: 'en');
+      }
       return const [];
     }
   }
 
-  /// Finds a specific first aid topic by identifier.
-  Future<FirstAidTopic?> getTopicById(String id) async {
-    final topics = await loadTopics();
+  /// Finds a specific first aid topic by identifier in specified language.
+  Future<FirstAidTopic?> getTopicById(String id, {String languageCode = 'en'}) async {
+    final topics = await loadTopics(languageCode: languageCode);
     try {
       return topics.firstWhere((t) => t.id.toLowerCase() == id.toLowerCase());
     } catch (_) {
@@ -37,9 +47,9 @@ class EmergencyService {
     }
   }
 
-  /// Searches topics by keyword.
-  Future<List<FirstAidTopic>> searchTopics(String query) async {
-    final topics = await loadTopics();
+  /// Searches topics by keyword in specified language.
+  Future<List<FirstAidTopic>> searchTopics(String query, {String languageCode = 'en'}) async {
+    final topics = await loadTopics(languageCode: languageCode);
     if (query.trim().isEmpty) return topics;
     final q = query.toLowerCase().trim();
     return topics.where((t) {

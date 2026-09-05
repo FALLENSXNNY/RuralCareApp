@@ -7,15 +7,19 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/ai_message.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/language_selector_modal.dart';
 import '../../../core/widgets/offline_banner.dart';
 
 class AiChatScreen extends ConsumerStatefulWidget {
-  const AiChatScreen({super.key});
+  const AiChatScreen({super.key, this.initialPrompt});
+
+  final String? initialPrompt;
 
   @override
   ConsumerState<AiChatScreen> createState() => _AiChatScreenState();
@@ -28,33 +32,46 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   bool _hasLoadedHistory = false;
   final List<AiMessage> _messages = [];
 
-  final List<_QuickTopic> _quickTopics = const [
-    _QuickTopic(
-      icon: Icons.thermostat_outlined,
-      title: 'Fever & Cold',
-      prompt: 'How do I manage a fever and cold at home safely?',
-    ),
-    _QuickTopic(
-      icon: Icons.water_drop_outlined,
-      title: 'How to make ORS',
-      prompt: 'How do I make oral rehydration solution (ORS) at home?',
-    ),
-    _QuickTopic(
-      icon: Icons.health_and_safety_outlined,
-      title: 'First-Aid Care',
-      prompt: 'What are the first-aid steps for minor cuts, burns, or bites?',
-    ),
-    _QuickTopic(
-      icon: Icons.local_hospital_outlined,
-      title: 'Nearest PHC',
-      prompt: 'How can I find my nearest Primary Health Centre (PHC)?',
-    ),
-    _QuickTopic(
-      icon: Icons.favorite_outline,
-      title: 'Blood Pressure Tips',
-      prompt: 'What lifestyle habits help keep blood pressure normal?',
-    ),
-  ];
+  List<_QuickTopic> _getQuickTopics(BuildContext context) {
+    final l10n = context.l10n;
+    return [
+      _QuickTopic(
+        icon: Icons.thermostat_outlined,
+        title: l10n.aiTopicFever,
+        prompt: l10n.aiTopicFeverPrompt,
+      ),
+      _QuickTopic(
+        icon: Icons.water_drop_outlined,
+        title: l10n.aiTopicOrs,
+        prompt: l10n.aiTopicOrsPrompt,
+      ),
+      _QuickTopic(
+        icon: Icons.health_and_safety_outlined,
+        title: l10n.aiTopicFirstAid,
+        prompt: l10n.aiTopicFirstAidPrompt,
+      ),
+      _QuickTopic(
+        icon: Icons.local_hospital_outlined,
+        title: l10n.aiTopicNearestPhc,
+        prompt: l10n.aiTopicNearestPhcPrompt,
+      ),
+      _QuickTopic(
+        icon: Icons.favorite_outline,
+        title: l10n.aiTopicBp,
+        prompt: l10n.aiTopicBpPrompt,
+      ),
+    ];
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialPrompt != null && widget.initialPrompt!.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _sendMessage(widget.initialPrompt);
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -103,7 +120,12 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
 
     try {
       final aiRepo = ref.read(aiRepositoryProvider);
-      final response = await aiRepo.sendMessage(text, history: _messages);
+      final currentLang = ref.read(localeProvider).languageCode;
+      final response = await aiRepo.sendMessage(
+        text,
+        history: _messages,
+        language: currentLang,
+      );
 
       if (mounted) {
         setState(() {
@@ -114,17 +136,37 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
       }
     } catch (_) {
       if (mounted) {
+        final currentLang = ref.read(localeProvider).languageCode;
+        String fallbackText;
+        if (currentLang == 'hi') {
+          fallbackText =
+              'आपके प्रश्न के लिए धन्यवाद। आपके मार्गदर्शन के लिए स्वास्थ्य जानकारी निम्नलिखित है:\n\n'
+              '• शांत वातावरण में विश्राम करें और पर्याप्त स्वच्छ पानी पिएं।\n'
+              '• अगले 24 घंटों में अपने लक्षणों पर बारीकी से नजर रखें।\n'
+              '• यदि लक्षण बने रहते हैं या बिगड़ते हैं, तो कृपया अपने नजदीकी प्राथमिक स्वास्थ्य केंद्र (PHC) जाएं।\n\n'
+              '**महत्वपूर्ण सूचना:** यह सामान्य स्वास्थ्य जानकारी है, चिकित्सीय निदान नहीं। कृपया डॉक्टर से सलाह लें।';
+        } else if (currentLang == 'bn') {
+          fallbackText =
+              'আপনার প্রশ্নের জন্য ধন্যবাদ। আপনার অবগতির জন্য স্বাস্থ্য নির্দেশিকা নিচে দেওয়া হলো:\n\n'
+              '• একটি শান্ত জায়গায় বিশ্রাম নিন এবং পর্যাপ্ত বিশুদ্ধ জল পান করুন।\n'
+              '• পরবর্তী ২৪ ঘণ্টায় আপনার লক্ষণগুলির ওপর সতর্ক দৃষ্টি রাখুন।\n'
+              '• লক্ষণগুলি স্থায়ী হলে বা খারাপ হলে অবিলম্বে আপনার নিকটস্থ প্রাথমিক স্বাস্থ্য কেন্দ্রে (PHC) যান।\n\n'
+              '**গুরুত্বপূর্ণ বিজ্ঞপ্তি:** এটি সাধারণ স্বাস্থ্য নির্দেশিকা, চিকিৎসাগত রোগ নির্ণয় নয়। অনুগ্রহ করে একজন ডাক্তারের পরামর্শ নিন।';
+        } else {
+          fallbackText =
+              'Thank you for your question. Here is health guidance for your consideration:\n\n'
+              '• Rest in a quiet space and drink plenty of clean, safe water.\n'
+              '• Monitor your symptoms over the next 24 hours.\n'
+              '• If symptoms worsen or persist, please visit your local Primary Health Centre (PHC Koregaon).\n\n'
+              '**Important Notice:** This is general health information, not a formal medical diagnosis. Please consult a doctor or healthcare worker.';
+        }
+
         setState(() {
           _isTyping = false;
           _messages.add(
             AiMessage(
               id: '${DateTime.now().millisecondsSinceEpoch}_err',
-              text:
-                  'Thank you for your question. Here is health guidance for your consideration:\n\n'
-                  '• Rest in a quiet space and drink plenty of clean, safe water.\n'
-                  '• Monitor your symptoms over the next 24 hours.\n'
-                  '• If symptoms worsen or persist, please visit your local Primary Health Centre (PHC Koregaon).\n\n'
-                  '**Important Notice:** This is general health information, not a formal medical diagnosis. Please consult a doctor or healthcare worker.',
+              text: fallbackText,
               isAi: true,
               time: DateTime.now(),
             ),
@@ -137,18 +179,17 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
 
   Future<void> _clearHistory() async {
     if (_messages.isEmpty) return;
+    final l10n = context.l10n;
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Clear Chat History'),
-        content: const Text(
-          'Are you sure you want to clear your conversation history with the AI Assistant?',
-        ),
+        title: Text(l10n.clearChatHistory),
+        content: Text(l10n.clearChatConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -156,7 +197,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
               backgroundColor: AppColors.emergency,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Clear History'),
+            child: Text(l10n.clearChat),
           ),
         ],
       ),
@@ -190,6 +231,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   Widget build(BuildContext context) {
     final isOnline = ref.watch(isOnlineProvider);
     final historyAsync = ref.watch(aiConversationHistoryProvider);
+    final l10n = context.l10n;
 
     historyAsync.whenData((history) {
       if (!_hasLoadedHistory) {
@@ -202,10 +244,21 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
     }
 
     final hasMessages = _messages.isNotEmpty || _isTyping;
+    final quickTopics = _getQuickTopics(context);
 
     return Scaffold(
       backgroundColor: AppColors.surfaceVariant,
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go(AppRoutes.home);
+            }
+          },
+        ),
         title: Row(
           children: [
             Container(
@@ -226,7 +279,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('AI Health Help', style: AppTextStyles.titleMedium),
+                  Text(l10n.aiHealthHelp, style: AppTextStyles.titleMedium),
                   Row(
                     children: [
                       Container(
@@ -239,7 +292,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        isOnline ? 'Online Assistant' : 'Offline Knowledge',
+                        isOnline ? l10n.onlineAssistant : l10n.offlineKnowledge,
                         style: AppTextStyles.labelSmall.copyWith(
                           color: isOnline ? AppColors.textMuted : AppColors.warning,
                           fontSize: 11,
@@ -255,10 +308,19 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
         backgroundColor: AppColors.surface,
         elevation: 0.5,
         actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.translate_rounded,
+              color: AppColors.primary,
+              size: 22,
+            ),
+            tooltip: l10n.changeLanguage,
+            onPressed: () => LanguageSelectorModal.show(context),
+          ),
           if (_messages.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.delete_sweep_outlined, color: AppColors.textMuted),
-              tooltip: 'Clear Chat',
+              tooltip: l10n.clearChat,
               onPressed: _clearHistory,
             ),
           IconButton(
@@ -267,7 +329,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
               color: AppColors.textMuted,
               size: 22,
             ),
-            tooltip: 'Medical Disclaimer',
+            tooltip: l10n.medicalDisclaimer,
             onPressed: () => _showDisclaimerDialog(context),
           ),
         ],
@@ -276,8 +338,8 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
         children: [
           // Offline Banner when disconnected
           if (!isOnline)
-            const OfflineBanner(
-              message: 'Offline Mode — General emergency and first-aid guidance available',
+            OfflineBanner(
+              message: l10n.offlineAiNotice,
             ),
 
           // Main Chat Area or Welcome Screen
@@ -316,7 +378,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
-                  children: _quickTopics.map((topic) {
+                  children: quickTopics.map((topic) {
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: ActionChip(
@@ -370,11 +432,11 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                       minLines: 1,
                       textCapitalization: TextCapitalization.sentences,
                       style: AppTextStyles.bodyMedium,
-                      decoration: const InputDecoration(
-                        hintText: 'Ask a health question or symptom...',
+                      decoration: InputDecoration(
+                        hintText: l10n.aiInputPlaceholder,
                         border: InputBorder.none,
                         isDense: true,
-                        contentPadding: EdgeInsets.symmetric(vertical: 8),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 8),
                       ),
                       onSubmitted: (_) => _sendMessage(),
                     ),
@@ -409,6 +471,9 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   }
 
   Widget _buildWelcomeState() {
+    final l10n = context.l10n;
+    final quickTopics = _getQuickTopics(context);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -437,13 +502,13 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'RuralCare Health Assistant',
+            l10n.aiAssistantTitle,
             style: AppTextStyles.headlineSmall,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 6),
           Text(
-            'Ask questions in simple words about common symptoms, first aid, medicines, or healthy habits.',
+            l10n.homeAiSubtitle,
             style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMuted),
             textAlign: TextAlign.center,
           ),
@@ -463,7 +528,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'For guidance only. Not a medical prescription. In emergencies, call 108 immediately.',
+                    l10n.aiEmergencyWarning,
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                       fontSize: 12,
@@ -478,14 +543,14 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
           Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              'Common Health Topics',
+              l10n.commonHealthTopics,
               style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.bold),
             ),
           ),
           const SizedBox(height: 12),
 
           // Grid of Quick Prompts
-          ..._quickTopics.map((topic) {
+          ...quickTopics.map((topic) {
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: Material(
@@ -543,6 +608,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   }
 
   void _showDisclaimerDialog(BuildContext context) {
+    final l10n = context.l10n;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -555,7 +621,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
               size: 24,
             ),
             const SizedBox(width: 10),
-            const Text('Clinical Notice'),
+            Text(l10n.clinicalNotice),
           ],
         ),
         content: Text(
@@ -565,7 +631,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('I Understand'),
+            child: Text(l10n.iUnderstand),
           ),
         ],
       ),
@@ -592,9 +658,9 @@ class _MessageBubble extends StatelessWidget {
   void _copyText(BuildContext context) {
     Clipboard.setData(ClipboardData(text: message.text));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Message copied to clipboard'),
-        duration: Duration(seconds: 2),
+      SnackBar(
+        content: Text(context.l10n.messageCopied),
+        duration: const Duration(seconds: 2),
       ),
     );
   }

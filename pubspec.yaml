@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   cupertino_icons: ^1.0.8
 
@@ -34,6 +36,13 @@ dependencies:
 
   # Launch URLs / phone calls
   url_launcher: ^6.3.1
+
+  # Location & GPS
+  geolocator: ^13.0.2
+  google_maps_flutter: ^2.10.0
+  # Required to enable Hybrid Composition rendering mode for multi-touch
+  google_maps_flutter_android: ^2.14.13
+  google_maps_flutter_platform_interface: ^2.7.3
 
   # Image caching
   cached_network_image: ^3.4.1

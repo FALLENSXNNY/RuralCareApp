@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/mock/mock_patient_data.dart';
 import '../../../core/models/doctor.dart';
 import '../../../core/providers/app_providers.dart';
@@ -41,11 +42,12 @@ class _FindDoctorScreenState extends ConsumerState<FindDoctorScreen> {
   @override
   Widget build(BuildContext context) {
     final doctorsAsync = ref.watch(doctorsProvider);
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: AppColors.surfaceVariant,
       appBar: AppBar(
-        title: const Text('Find a Doctor'),
+        title: Text(l10n.findADoctor),
         backgroundColor: AppColors.surface,
         actions: [
           IconButton(
@@ -63,7 +65,7 @@ class _FindDoctorScreenState extends ConsumerState<FindDoctorScreen> {
               style: AppTextStyles.bodyMedium,
               onChanged: (val) => setState(() => _searchQuery = val),
               decoration: InputDecoration(
-                hintText: 'Search by doctor name or speciality...',
+                hintText: l10n.searchDoctorsHint,
                 prefixIcon: const Icon(
                   Icons.search,
                   color: AppColors.textMuted,
@@ -99,13 +101,13 @@ class _FindDoctorScreenState extends ConsumerState<FindDoctorScreen> {
               error: (err, stack) {
                 final fallbackList =
                     _filterDoctors(MockPatientData.doctors);
-                return _buildDoctorList(fallbackList);
+                return _buildDoctorList(fallbackList, l10n);
               },
               data: (doctors) {
                 final list = _filterDoctors(
                   doctors.isNotEmpty ? doctors : MockPatientData.doctors,
                 );
-                return _buildDoctorList(list);
+                return _buildDoctorList(list, l10n);
               },
             ),
           ),
@@ -114,7 +116,7 @@ class _FindDoctorScreenState extends ConsumerState<FindDoctorScreen> {
     );
   }
 
-  Widget _buildDoctorList(List<Doctor> list) {
+  Widget _buildDoctorList(List<Doctor> list, AppLocalizations l10n) {
     if (list.isEmpty) {
       return Center(
         child: Padding(
@@ -129,12 +131,13 @@ class _FindDoctorScreenState extends ConsumerState<FindDoctorScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'No doctors found',
+                l10n.noDoctorsFound,
                 style: AppTextStyles.titleMedium,
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 4),
               Text(
-                'Try searching for a different name or speciality.',
+                l10n.adjustDoctorSearchHint,
                 style: AppTextStyles.bodySmall
                     .copyWith(color: AppColors.textMuted),
                 textAlign: TextAlign.center,
@@ -227,7 +230,7 @@ class _FindDoctorScreenState extends ConsumerState<FindDoctorScreen> {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          'Online',
+                          l10n.online,
                           style: AppTextStyles.labelSmall.copyWith(
                             color: AppColors.primary,
                           ),

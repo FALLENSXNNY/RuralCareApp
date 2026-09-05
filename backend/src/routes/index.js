@@ -6,6 +6,7 @@ const recordController = require('../controllers/recordController');
 const facilityController = require('../controllers/facilityController');
 const aiController = require('../controllers/aiController');
 const documentController = require('../controllers/documentController');
+const healthcareController = require('../controllers/healthcareController');
 
 const router = express.Router();
 
@@ -48,5 +49,10 @@ router.delete('/documents/:id', authenticate, documentController.deleteDocument)
 router.post('/ai/chat', authenticate, aiController.sendMessage);
 router.get('/ai/history', authenticate, aiController.getHistory);
 router.delete('/ai/history', authenticate, aiController.clearHistory);
+
+// GPS Healthcare Finder — Places & Directions
+router.get('/healthcare/nearby', healthcareController.getNearby);
+router.get('/healthcare/details/:placeId', healthcareController.getDetails);
+router.get('/healthcare/directions', healthcareController.getDirections);
 
 module.exports = router;

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'core/localization/app_localizations.dart';
 import 'core/providers/app_providers.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
@@ -14,23 +16,31 @@ class RuralCareApp extends ConsumerWidget {
     // re-evaluates the redirect callback on every auth state change.
     final router = createAppRouter(ref);
     final isOnline = ref.watch(isOnlineProvider);
+    final currentLocale = ref.watch(localeProvider);
 
     return MaterialApp.router(
       title: 'RuralCare',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       routerConfig: router,
+      locale: currentLocale,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       builder: (context, child) {
         return Material(
           color: Colors.white,
           child: Column(
             children: [
               if (!isOnline)
-                const SafeArea(
+                SafeArea(
                   bottom: false,
                   child: OfflineBanner(
-                    message:
-                        'No internet connection — Emergency guidance remains available offline',
+                    message: context.l10n.offlineBannerMsg,
                   ),
                 ),
               Expanded(child: child ?? const SizedBox.shrink()),

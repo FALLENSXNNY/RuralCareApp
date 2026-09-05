@@ -122,11 +122,95 @@ class LocalStorageService {
   // ── App preferences ─────────────────────────────────────────────────────
 
   static const _keyVoiceLanguage = 'voice_language';
+  static const _keyAppLanguage = 'app_language';
 
   String get voiceLanguage => _prefs.getString(_keyVoiceLanguage) ?? 'en';
 
   Future<void> setVoiceLanguage(String language) async {
     await _prefs.setString(_keyVoiceLanguage, language);
+  }
+
+  String get appLanguage => _prefs.getString(_keyAppLanguage) ?? 'en';
+
+  Future<void> setAppLanguage(String language) async {
+    await _prefs.setString(_keyAppLanguage, language);
+  }
+
+  // ── Pregnancy profile & ANC care ────────────────────────────────────────
+
+  static const _keyPregnancyProfile = 'pregnancy_profile';
+  static const _keyAncCompletedVisits = 'anc_completed_visits';
+
+  String? get rawPregnancyProfile => _prefs.getString(_keyPregnancyProfile);
+
+  Future<void> savePregnancyProfileJson(String jsonStr) async {
+    await _prefs.setString(_keyPregnancyProfile, jsonStr);
+  }
+
+  List<int> get completedAncVisits {
+    final raw = _prefs.getStringList(_keyAncCompletedVisits);
+    if (raw == null) return [];
+    return raw.map((e) => int.tryParse(e) ?? 0).where((n) => n > 0).toList();
+  }
+
+  Future<void> setAncVisitCompleted(int visitNumber, bool isCompleted) async {
+    final current = completedAncVisits.toSet();
+    if (isCompleted) {
+      current.add(visitNumber);
+    } else {
+      current.remove(visitNumber);
+    }
+    await _prefs.setStringList(
+      _keyAncCompletedVisits,
+      current.map((e) => e.toString()).toList(),
+    );
+  }
+
+  // ── Child Care & Fetal Kick Tracking ─────────────────────────────────
+
+  static const _keyCompletedVaccines = 'child_completed_vaccines';
+  static const _keyKickSessions = 'fetal_kick_sessions';
+  static const _keyDailyChecklist = 'maternal_daily_checklist';
+
+  List<String> get completedVaccines {
+    return _prefs.getStringList(_keyCompletedVaccines) ?? [];
+  }
+
+  Future<void> setVaccineCompleted(String vaccineId, bool isCompleted) async {
+    final current = completedVaccines.toSet();
+    if (isCompleted) {
+      current.add(vaccineId);
+    } else {
+      current.remove(vaccineId);
+    }
+    await _prefs.setStringList(_keyCompletedVaccines, current.toList());
+  }
+
+  List<String> get rawKickSessions {
+    return _prefs.getStringList(_keyKickSessions) ?? [];
+  }
+
+  Future<void> saveKickSession(String sessionJson) async {
+    final current = rawKickSessions;
+    current.insert(0, sessionJson);
+    // Keep last 30 sessions
+    if (current.length > 30) current.removeLast();
+    await _prefs.setStringList(_keyKickSessions, current);
+  }
+
+  Map<String, bool> get dailyChecklist {
+    final raw = _prefs.getString(_keyDailyChecklist);
+    if (raw == null) return {};
+    try {
+      final decoded = jsonDecode(raw) as Map<String, dynamic>;
+      return decoded.map((k, v) => MapEntry(k, v as bool));
+    } catch (_) {
+      return {};
+    }
+  }
+
+  Future<void> saveDailyChecklist(Map<String, bool> checklist) async {
+    await _prefs.setString(_keyDailyChecklist, jsonEncode(checklist));
   }
 
   // ── Clear all ───────────────────────────────────────────────────────────

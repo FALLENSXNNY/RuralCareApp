@@ -490,5 +490,103 @@
       "Do NOT put onion, keys, or spoons in mouth during fits",
       "Do NOT bundle up in heavy blankets"
     ]
+  },
+  {
+    "id": "pregnancy_emergency",
+    "title": "Pregnancy Danger Signs & Emergency",
+    "icon": "🤰",
+    "urgency": "HIGH",
+    "callAmb": true,
+    "warningBanner": "Vaginal bleeding, severe headache with vision changes, intense abdominal pain, or reduced fetal movement require immediate 108 ambulance transport.",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Call 108 Ambulance Immediately",
+        "body": "Call 108 without delay. Inform them of pregnancy week, bleeding, or convulsions so they prepare obstetric equipment."
+      },
+      {
+        "step": 2,
+        "title": "Rest on Left Side (L-Position)",
+        "body": "Keep the mother resting on her left side with knees bent. This relieves pressure on major blood vessels and maximizes blood flow to the baby."
+      },
+      {
+        "step": 3,
+        "title": "Nil by Mouth (No Food or Drink)",
+        "body": "Do not give heavy meals, drinks, or home remedies in case emergency surgical delivery (C-section) or anesthesia is required."
+      },
+      {
+        "step": 4,
+        "title": "Gather MCP Card & Antenatal Records",
+        "body": "Collect the Mother-Child Protection (MCP) card, previous ultrasound scans, blood group reports, and clean sanitary pads for hospital admission."
+      },
+      {
+        "step": 5,
+        "title": "Inform ASHA / ANM Worker",
+        "body": "Contact the local ASHA or ANM worker immediately so they can coordinate with the nearest First Referral Unit (FRU) or District Hospital."
+      }
+    ],
+    "dos": [
+      "Call 108 ambulance immediately or arrange vehicle",
+      "Keep mother resting calmly on her left side",
+      "Carry Mother-Child Protection (MCP) card and test reports",
+      "Use clean sanitary pad to gauge bleeding volume",
+      "Alert local ASHA or ANM health worker"
+    ],
+    "donts": [
+      "Do NOT wait or delay hospital visit hoping symptoms subside",
+      "Do NOT take unprescribed painkillers or traditional concoctions",
+      "Do NOT massage or press hard on the pregnant belly",
+      "Do NOT let the mother lie flat on her back",
+      "Do NOT give heavy foods or drinks before medical evaluation"
+    ]
+  },
+  {
+    "id": "emergency_labour_delivery",
+    "title": "Immediate Childbirth / Emergency Labour",
+    "icon": "👶",
+    "urgency": "HIGH",
+    "callAmb": true,
+    "warningBanner": "If the baby's head is visible (crowning) or contractions are continuous with an urge to push, do NOT attempt to transport the mother. Prepare for immediate delivery and call 108.",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Call 108 & Summon Local ASHA / Dai",
+        "body": "Dial 108 immediately and state that delivery is happening right now. Request an emergency team with newborn resuscitation equipment."
+      },
+      {
+        "step": 2,
+        "title": "Prepare Clean, Warm Space & Wash Hands",
+        "body": "Wash hands with soap and water. Place clean plastic sheets, cloth, or towels under the mother in a warm, draft-free room."
+      },
+      {
+        "step": 3,
+        "title": "Comfortable Mother Position",
+        "body": "Support the mother in a semi-sitting position or lying on her back with knees bent and wide apart. Encourage steady breathing and gentle pushing during contractions."
+      },
+      {
+        "step": 4,
+        "title": "Support Baby's Head (Do NOT Pull)",
+        "body": "As the head emerges, support it gently with a clean towel to prevent rapid expulsion. Check that the umbilical cord is not tight around the neck. Never pull the baby."
+      },
+      {
+        "step": 5,
+        "title": "Dry Baby & Place Skin-to-Skin on Chest",
+        "body": "Dry the baby immediately with a clean towel. Place the baby naked directly onto the mother's bare chest and cover both with a warm blanket to prevent hypothermia. Leave umbilical cord intact until 108 arrives."
+      }
+    ],
+    "dos": [
+      "Wash hands thoroughly with soap before touching the baby",
+      "Support the baby's head gently during birth",
+      "Place baby skin-to-skin immediately on mother's chest",
+      "Cover mother and baby with clean, warm dry cloths",
+      "Encourage breastfeeding within the first hour"
+    ],
+    "donts": [
+      "Do NOT pull on the baby's head, neck, or body",
+      "Do NOT cut the umbilical cord with unsterilized tools; wait for the medical team",
+      "Do NOT pull or tug on the cord to remove the placenta",
+      "Do NOT slap the newborn baby; gently rub back to stimulate breathing",
+      "Do NOT bathe the newborn baby immediately after birth"
+    ]
   }
 ]

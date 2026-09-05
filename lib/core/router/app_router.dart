@@ -1,4 +1,5 @@
 // GoRouter configuration for RuralCare patient app
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -23,8 +24,16 @@ import '../../features/emergency/screens/offline_content_settings_screen.dart';
 // AI Assistant
 import '../../features/ai_assistant/screens/ai_chat_screen.dart';
 
-// Find Care
-import '../../features/find_care/screens/facility_finder_screen.dart';
+// Pregnancy Care
+import '../../features/pregnancy/screens/pregnancy_dashboard_screen.dart';
+import '../../features/pregnancy/screens/antenatal_schedule_screen.dart';
+import '../../features/pregnancy/screens/pregnancy_warning_signs_screen.dart';
+
+// Find Care & Healthcare Finder
+import '../../features/healthcare_finder/presentation/healthcare_map_screen.dart';
+import '../../features/healthcare_finder/presentation/healthcare_details_screen.dart';
+import '../../features/healthcare_finder/presentation/directions_screen.dart';
+import '../../features/healthcare_finder/models/healthcare_place.dart';
 import '../../features/find_care/screens/find_doctor_screen.dart';
 import '../../features/find_care/screens/doctor_profile_screen.dart';
 
@@ -49,6 +58,16 @@ import '../models/medical_document.dart';
 // Consultation
 import '../../features/consultation/screens/video_consultation_screen.dart';
 
+// Appointments & Queue (Demo)
+import '../../features/appointments/models/demo_appointment.dart';
+import '../../features/appointments/screens/book_appointment_screen.dart';
+import '../../features/appointments/screens/confirm_appointment_screen.dart';
+import '../../features/appointments/screens/appointment_confirmed_screen.dart';
+import '../../features/appointments/screens/my_appointments_screen.dart';
+import '../../features/appointments/screens/appointment_details_screen.dart';
+import '../../features/appointments/screens/check_in_screen.dart';
+import '../../features/appointments/screens/live_queue_screen.dart';
+
 // Auth
 import '../providers/app_providers.dart';
 import '../storage/local_storage_service.dart';
@@ -67,6 +86,11 @@ class AppRoutes {
   static const String profile = '/home/profile';
   static const String editProfile = '/home/profile/edit';
 
+  // Pregnancy Care
+  static const String pregnancy = '/pregnancy';
+  static const String antenatalSchedule = '/pregnancy/anc-schedule';
+  static const String pregnancyWarningSigns = '/pregnancy/warning-signs';
+
   // Emergency — full screen, no bottom nav
   static const String emergency = '/emergency';
   static const String firstAid = '/emergency/first-aid/:type';
@@ -75,9 +99,12 @@ class AppRoutes {
 
   // AI
   static const String aiChat = '/ai-chat';
+  static const String aiAssistant = '/ai-chat';
 
-  // Find Care
+  // Find Care & Healthcare Finder
   static const String facilityFinder = '/find-care';
+  static const String healthcareDetails = '/healthcare-details/:id';
+  static const String directions = '/directions';
   static const String findDoctor = '/find-care/doctors';
   static const String doctorProfile = '/find-care/doctors/:id';
 
@@ -100,6 +127,15 @@ class AppRoutes {
 
   // Consultation
   static const String videoConsultation = '/consultation';
+
+  // Appointments & Queue (Demo)
+  static const String bookAppointment = '/care/book-appointment';
+  static const String confirmAppointment = '/care/confirm-appointment';
+  static const String appointmentConfirmed = '/care/appointment-confirmed';
+  static const String myAppointments = '/care/appointments';
+  static const String appointmentDetails = '/care/appointments/:id';
+  static const String checkIn = '/care/appointments/:id/checkin';
+  static const String liveQueue = '/care/queue';
 
   static bool isEmergencyRoute(String location) =>
       location.startsWith('/emergency');
@@ -186,6 +222,21 @@ GoRouter createAppRouter(WidgetRef ref) {
             builder: (context, state) => const PatientHomeScreen(),
           ),
           GoRoute(
+            path: AppRoutes.pregnancy,
+            builder: (context, state) => const PregnancyDashboardScreen(),
+            routes: [
+              GoRoute(
+                path: 'anc-schedule',
+                builder: (context, state) => const AntenatalScheduleScreen(),
+              ),
+              GoRoute(
+                path: 'warning-signs',
+                builder: (context, state) =>
+                    const PregnancyWarningSignsScreen(),
+              ),
+            ],
+          ),
+          GoRoute(
             path: AppRoutes.profile,
             builder: (context, state) => const PatientProfileScreen(),
             routes: [
@@ -197,15 +248,45 @@ GoRouter createAppRouter(WidgetRef ref) {
           ),
           GoRoute(
             path: AppRoutes.aiChat,
-            builder: (context, state) => const AiChatScreen(),
+            builder: (context, state) {
+              final extra = state.extra;
+              final prompt = extra is String ? extra : null;
+              return AiChatScreen(initialPrompt: prompt);
+            },
           ),
           GoRoute(
             path: AppRoutes.facilityFinder,
-            builder: (context, state) => const FacilityFinderScreen(),
+            builder: (context, state) {
+              final extra = state.extra;
+              String? initialCategory;
+              bool isEmergency = false;
+
+              if (extra is Map<String, dynamic>) {
+                initialCategory = extra['category'] as String?;
+                isEmergency = extra['emergency'] as bool? ?? false;
+              } else if (extra is String) {
+                initialCategory = extra;
+              }
+
+              initialCategory ??= state.uri.queryParameters['category'];
+              if (state.uri.queryParameters['emergency'] == 'true') {
+                isEmergency = true;
+              }
+
+              return HealthcareMapScreen(
+                key: ValueKey('healthcare_map_${initialCategory ?? "All"}_$isEmergency'),
+                initialCategory: initialCategory,
+                isEmergencyMode: isEmergency,
+              );
+            },
             routes: [
               GoRoute(
                 path: 'doctors',
-                builder: (context, state) => const FindDoctorScreen(),
+                builder: (context, state) => const HealthcareMapScreen(
+                  key: ValueKey('healthcare_map_Doctors_false'),
+                  initialCategory: 'Doctors',
+                  isEmergencyMode: false,
+                ),
               ),
               GoRoute(
                 path: 'doctors/:id',
@@ -215,6 +296,54 @@ GoRouter createAppRouter(WidgetRef ref) {
                 },
               ),
             ],
+          ),
+          GoRoute(
+            path: '/healthcare-details/:id',
+            builder: (context, state) {
+              final extra = state.extra;
+              if (extra is HealthcarePlace) {
+                return HealthcareDetailsScreen(place: extra);
+              }
+              final id = state.pathParameters['id'] ?? 'place_satara_dist_hosp';
+              return HealthcareDetailsScreen(
+                place: HealthcarePlace(
+                  id: id,
+                  name: 'Healthcare Facility',
+                  category: 'Hospitals',
+                  type: 'District Hospital',
+                  address: 'Satara District, Maharashtra',
+                  distance: 'Nearby',
+                  phone: '+91 2162 233 444',
+                  hours: 'Open 24 Hours',
+                  isEmergency24x7: true,
+                  hasMaternalCare: true,
+                ),
+              );
+            },
+          ),
+          GoRoute(
+            path: AppRoutes.directions,
+            builder: (context, state) {
+              final extra = state.extra;
+              if (extra is HealthcarePlace) {
+                return DirectionsScreen(place: extra);
+              }
+              return const DirectionsScreen(
+                place: HealthcarePlace(
+                  id: 'default',
+                  name: 'Satara District Hospital',
+                  category: 'Hospitals',
+                  type: 'District Hospital',
+                  address: 'Satara, Maharashtra',
+                  distance: '1.8 km',
+                  distanceKm: 1.8,
+                  phone: '+91 2162 233 444',
+                  hours: 'Open 24 Hours',
+                  isEmergency24x7: true,
+                  hasMaternalCare: true,
+                ),
+              );
+            },
           ),
           GoRoute(
             path: AppRoutes.recordsHub,
@@ -290,6 +419,73 @@ GoRouter createAppRouter(WidgetRef ref) {
           GoRoute(
             path: AppRoutes.videoConsultation,
             builder: (context, state) => const VideoConsultationScreen(),
+          ),
+
+          // ── Appointments & Queue (Demo) ──────────────────────────
+          GoRoute(
+            path: AppRoutes.bookAppointment,
+            builder: (context, state) {
+              final place = state.extra is HealthcarePlace
+                  ? state.extra as HealthcarePlace
+                  : null;
+              return BookAppointmentScreen(place: place);
+            },
+          ),
+          GoRoute(
+            path: AppRoutes.confirmAppointment,
+            builder: (context, state) {
+              final appointmentData = state.extra is Map<String, dynamic>
+                  ? state.extra as Map<String, dynamic>
+                  : <String, dynamic>{};
+              return ConfirmAppointmentScreen(
+                appointmentData: appointmentData,
+              );
+            },
+          ),
+          GoRoute(
+            path: AppRoutes.appointmentConfirmed,
+            builder: (context, state) {
+              final appointment = state.extra is DemoAppointment
+                  ? state.extra as DemoAppointment
+                  : null;
+              return AppointmentConfirmedScreen(
+                appointment: appointment,
+              );
+            },
+          ),
+          GoRoute(
+            path: AppRoutes.myAppointments,
+            builder: (context, state) => const MyAppointmentsScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.appointmentDetails,
+            builder: (context, state) {
+              final id = state.pathParameters['id'] ?? '';
+              final appointment = state.extra is DemoAppointment
+                  ? state.extra as DemoAppointment
+                  : null;
+              return AppointmentDetailsScreen(
+                appointmentId: id,
+                initialAppointment: appointment,
+              );
+            },
+          ),
+          GoRoute(
+            path: AppRoutes.checkIn,
+            builder: (context, state) {
+              final id = state.pathParameters['id'] ?? '';
+              final appointment = state.extra is DemoAppointment
+                  ? state.extra as DemoAppointment
+                  : null;
+              return CheckInScreen(
+                appointmentId: id,
+                initialAppointment: appointment,
+              );
+            },
+          ),
+          GoRoute(
+            path: AppRoutes.liveQueue,
+            builder: (context, state) => const LiveQueueScreen(),
           ),
         ],
       ),

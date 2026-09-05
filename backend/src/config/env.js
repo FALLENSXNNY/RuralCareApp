@@ -28,8 +28,11 @@ const env = {
     // or unset when using Application Default Credentials (production).
     googleApplicationCredentials: process.env.GOOGLE_APPLICATION_CREDENTIALS,
 
-    // Gemini (Phase 7 — reserved, not used yet)
+    // Gemini
     geminiApiKey: process.env.GEMINI_API_KEY,
+
+    // Google Maps Platform (Places & Directions) — never exposed to Flutter
+    googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || process.env.GOOGLE_MAP_API_KEY || '',
 };
 
 // Validate critical vars only when actually connecting to real services.

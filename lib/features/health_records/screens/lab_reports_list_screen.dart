@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/lab_report.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_colors.dart';
@@ -18,11 +19,11 @@ class LabReportsListScreen extends ConsumerStatefulWidget {
 }
 
 class _LabReportsListScreenState extends ConsumerState<LabReportsListScreen> {
-  String _selectedFilter = 'All';
+  String _selectedFilter = 'ALL';
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
 
-  final List<String> _filterOptions = ['All', 'Normal', 'Abnormal'];
+  final List<String> _filterOptions = const ['ALL', 'NORMAL', 'ABNORMAL'];
 
   @override
   void dispose() {
@@ -33,11 +34,12 @@ class _LabReportsListScreenState extends ConsumerState<LabReportsListScreen> {
   @override
   Widget build(BuildContext context) {
     final labAsync = ref.watch(labReportsProvider);
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: AppColors.surfaceVariant,
       appBar: AppBar(
-        title: const Text('Lab & Diagnostic Reports'),
+        title: Text(l10n.labReports),
         backgroundColor: AppColors.surface,
       ),
       body: Column(
@@ -53,7 +55,7 @@ class _LabReportsListScreenState extends ConsumerState<LabReportsListScreen> {
                   onChanged: (val) =>
                       setState(() => _searchQuery = val.trim().toLowerCase()),
                   decoration: InputDecoration(
-                    hintText: 'Search test name or facility...',
+                    hintText: l10n.searchLabReportsHint,
                     prefixIcon:
                         const Icon(Icons.search, color: AppColors.textMuted),
                     suffixIcon: _searchQuery.isNotEmpty

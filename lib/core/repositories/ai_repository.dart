@@ -6,8 +6,12 @@ import '../models/ai_message.dart';
 
 abstract class AIRepository {
   /// Sends a message to the AI assistant and returns the response.
-  /// The AI must follow AI_SAFETY.md rules.
-  Future<AiMessage> sendMessage(String message, {List<AiMessage>? history});
+  /// The AI must follow AI_SAFETY.md rules and synchronize language.
+  Future<AiMessage> sendMessage(
+    String message, {
+    List<AiMessage>? history,
+    String? language,
+  });
 
   /// Returns the conversation history.
   Future<List<AiMessage>> getConversationHistory();

@@ -43,7 +43,11 @@ class ApiClient {
     Map<String, String>? headers,
     String? authToken,
   }) async {
-    final uri = Uri.parse('$_baseUrl$path');
+    String normalizedPath = path;
+    if (_baseUrl.endsWith('/api/v1') && normalizedPath.startsWith('/api/')) {
+      normalizedPath = normalizedPath.replaceFirst('/api/', '/');
+    }
+    final uri = Uri.parse('$_baseUrl$normalizedPath');
     final requestHeaders = <String, String>{
       'Content-Type': 'application/json',
       'Accept': 'application/json',

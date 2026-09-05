@@ -12,7 +12,7 @@ class AppConfig {
 
   /// Current environment. Set to production for Demo v1 builds connecting to Railway.
   /// Switch to AppEnvironment.development for local localhost/emulator testing.
-  static const AppEnvironment environment = AppEnvironment.production;
+  static const AppEnvironment environment = AppEnvironment.development;
 
   /// Whether the app is running in debug/demo mode.
   static bool get isDevelopment => environment == AppEnvironment.development;

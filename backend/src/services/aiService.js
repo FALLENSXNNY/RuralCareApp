@@ -305,6 +305,12 @@ Your priority order is:
 6. Never present uncertain information as fact.
 `.trim();
 
+const LANGUAGE_INSTRUCTIONS = {
+    en: 'Respond in clear, simple English. The selected application language is English.',
+    hi: 'उत्तर स्पष्ट, स्वाभाविक और सरल हिन्दी (Hindi in Devanagari script) में दें। ऐप की चयनित भाषा हिन्दी है। चिकित्सकीय शब्दों को आसान भाषा में समझाएं। अनावश्यक रूप से अंग्रेजी न मिलाएं।',
+    bn: 'উত্তরটি স্পষ্ট, সাবলীল এবং সহজ বাংলায় (Bengali in Bengali script) দিন। অ্যাপের নির্বাচিত ভাষা বাংলা। চিকিৎসাগত পরিভাষা সহজ ভাষায় ব্যাখ্যা করুন। অপ্রয়োজনীয়ভাবে ইংরেজি মেশাবেন না।',
+};
+
 function checkIsEmergency(text) {
     if (!text) return false;
     const lower = text.toLowerCase();
@@ -326,19 +332,35 @@ function checkIsEmergency(text) {
     return positiveEmergencyPatterns.some((pattern) => pattern.test(lower));
 }
 
-function getServiceUnavailableResponse() {
+function getServiceUnavailableResponse(language = 'en') {
+    const lang = (language && ['hi', 'bn'].includes(language.toLowerCase())) ? language.toLowerCase() : 'en';
+    if (lang === 'hi') {
+        return `स्वास्थ्य सहायक सेवा से जुड़ने में समस्या आ रही है। कृपया अपना इंटरनेट कनेक्शन जांचें या कुछ क्षण बाद पुनः प्रयास करें।\n\n` +
+            `यदि आपको गंभीर या बिगड़ते लक्षण महसूस हो रहे हैं, तो कृपया प्रतीक्षा न करें — सीधे 108 पर कॉल करें या अपने नजदीकी प्राथमिक स्वास्थ्य केंद्र (PHC) / अस्पताल जाएं।\n\n` +
+            `नोट: यह सामान्य स्वास्थ्य जानकारी है, चिकित्सीय निदान नहीं। चिकित्सकीय परामर्श के लिए डॉक्टर से मिलें।`;
+    }
+    if (lang === 'bn') {
+        return `স্বাস্থ্য সহকারী সেবার সাথে সংযোগ স্থাপনে সমস্যা হচ্ছে। অনুগ্রহ করে আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন বা কিছুক্ষণ পরে আবার চেষ্টা করুন।\n\n` +
+            `আপনার লক্ষণগুলি গুরুতর হলে অপেক্ষা করবেন না — সরাসরি ১০৮ নম্বরে কল করুন অথবা নিকটস্থ প্রাথমিক স্বাস্থ্য কেন্দ্রে (PHC) যান।\n\n` +
+            `নোট: এটি সাধারণ স্বাস্থ্য নির্দেশিকা, চিকিৎসাগত রোগ নির্ণয় নয়। ডাক্তারের সাথে পরামর্শ করুন।`;
+    }
     return `I am currently having trouble connecting to the health assistant service. Please check your internet connection or try again in a few moments.\n\n` +
         `If you are experiencing severe or worsening symptoms, please do not wait — call 108 or visit your nearest Primary Health Centre (PHC) / emergency facility directly.\n\n` +
         `Note: This is general health information, not a formal medical diagnosis. Please consult a qualified doctor for medical evaluation.`;
 }
 
-async function callGeminiApi(apiKey, userMessage, conversationHistory = []) {
+async function callGeminiApi(apiKey, userMessage, conversationHistory = [], language = 'en') {
     const candidateModels = [
         'gemini-flash-lite-latest',
         'gemini-3.1-flash-lite-preview',
         'gemini-3.5-flash',
         'gemini-3.6-flash',
     ];
+
+    const langCode = (language && ['hi', 'bn'].includes(language.toLowerCase())) ? language.toLowerCase() : 'en';
+    const langInstruction = LANGUAGE_INSTRUCTIONS[langCode] || LANGUAGE_INSTRUCTIONS.en;
+
+    const dynamicSystemPrompt = `${SYSTEM_PROMPT}\n\n---\n\n## 18. MANDATORY RESPONSE LANGUAGE SYNCHRONIZATION\n\n${langInstruction}\n\nIMPORTANT: The user has selected "${langCode}" as their application language. You MUST generate the complete response in ${langCode === 'hi' ? 'Hindi (हिन्दी)' : langCode === 'bn' ? 'Bengali (বাংলা)' : 'English'}, regardless of what language the user's message was entered in. Preserve Markdown structure (headings, bullet points, bold text), emergency clarity, and medical accuracy.`;
 
     const contents = [];
 
@@ -372,7 +394,7 @@ async function callGeminiApi(apiKey, userMessage, conversationHistory = []) {
                 signal: AbortSignal.timeout(25000),
                 body: JSON.stringify({
                     systemInstruction: {
-                        parts: [{ text: SYSTEM_PROMPT }],
+                        parts: [{ text: dynamicSystemPrompt }],
                     },
                     contents,
                     generationConfig: {
@@ -403,10 +425,10 @@ async function callGeminiApi(apiKey, userMessage, conversationHistory = []) {
     throw lastError || new Error('All candidate Gemini models failed to respond.');
 }
 
-async function processChatMessage(patientId, userMessage, history = []) {
+async function processChatMessage(patientId, userMessage, history = [], language = 'en') {
     // Log ONLY safe metadata — never log sensitive medical messages
     console.log(
-        `[aiService] Chat request: messagePresent=${!!userMessage}, messageLength=${userMessage ? userMessage.length : 0}, patientIdPresent=${!!patientId}`
+        `[aiService] Chat request: messagePresent=${!!userMessage}, messageLength=${userMessage ? userMessage.length : 0}, lang=${language || 'en'}, patientIdPresent=${!!patientId}`
     );
 
     const isEmergency = checkIsEmergency(userMessage);
@@ -416,13 +438,13 @@ async function processChatMessage(patientId, userMessage, history = []) {
 
     if (apiKey && apiKey.trim().length > 10) {
         try {
-            responseText = await callGeminiApi(apiKey.trim(), userMessage, history);
+            responseText = await callGeminiApi(apiKey.trim(), userMessage, history, language);
         } catch (err) {
             console.error('[aiService] Gemini API call failed:', err.message);
-            responseText = getServiceUnavailableResponse();
+            responseText = getServiceUnavailableResponse(language);
         }
     } else {
-        responseText = getServiceUnavailableResponse();
+        responseText = getServiceUnavailableResponse(language);
     }
 
     // Persist messages in database if patientId is provided

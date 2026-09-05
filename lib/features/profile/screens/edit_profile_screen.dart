@@ -28,8 +28,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   late final TextEditingController _villageController;
   late final TextEditingController _districtController;
   late final TextEditingController _stateController;
+  late final TextEditingController _abhaController;
+  late final TextEditingController _emergencyNameController;
+  late final TextEditingController _emergencyPhoneController;
 
   String _selectedGender = 'Female';
+  bool _isPregnant = false;
+  int _gestationalWeek = 12;
   String _selectedBloodGroup = "Don't Know";
   bool _isLoading = false;
   String? _errorMessage;
@@ -65,6 +70,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _villageController = TextEditingController();
     _districtController = TextEditingController();
     _stateController = TextEditingController();
+    _abhaController = TextEditingController();
+    _emergencyNameController = TextEditingController();
+    _emergencyPhoneController = TextEditingController();
   }
 
   void _populateFromPatient(Patient patient) {
@@ -76,6 +84,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _villageController.text = patient.village;
     _districtController.text = patient.district;
     _stateController.text = patient.state.isNotEmpty ? patient.state : 'Maharashtra';
+    _abhaController.text = patient.abhaId;
+    _emergencyNameController.text = patient.emergencyContactName;
+    _emergencyPhoneController.text = patient.emergencyContactPhone;
+    _isPregnant = patient.isPregnant;
+    _gestationalWeek = patient.gestationalWeek ?? 12;
 
     if (_genders.contains(patient.gender)) {
       _selectedGender = patient.gender;
@@ -104,6 +117,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _villageController.dispose();
     _districtController.dispose();
     _stateController.dispose();
+    _abhaController.dispose();
+    _emergencyNameController.dispose();
+    _emergencyPhoneController.dispose();
     super.dispose();
   }
 
@@ -129,6 +145,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       name: _nameController.text.trim(),
       age: int.tryParse(_ageController.text.trim()) ?? currentPatient.age,
       gender: _selectedGender,
+      isPregnant: _selectedGender == 'Female' ? _isPregnant : false,
+      gestationalWeek: (_selectedGender == 'Female' && _isPregnant) ? _gestationalWeek : null,
+      emergencyContactName: _emergencyNameController.text.trim(),
+      emergencyContactPhone: _emergencyPhoneController.text.trim(),
+      abhaId: _abhaController.text.trim(),
       village: _villageController.text.trim(),
       district: _districtController.text.trim(),
       state: _stateController.text.trim(),
@@ -301,7 +322,138 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                               );
                             }).toList(),
                           ),
+
+                          // Female Pregnancy Section
+                          if (_selectedGender == 'Female') ...[
+                            const SizedBox(height: 16),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFCE4EC),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: const Color(0xFFF48FB1),
+                                  width: 0.8,
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.pregnant_woman_rounded,
+                                        color: Color(0xFFC2185B),
+                                        size: 22,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      const Expanded(
+                                        child: Text(
+                                          'Are you currently pregnant?',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF880E4F),
+                                          ),
+                                        ),
+                                      ),
+                                      Switch.adaptive(
+                                        value: _isPregnant,
+                                        activeThumbColor: const Color(0xFFC2185B),
+                                        onChanged: (val) =>
+                                            setState(() => _isPregnant = val),
+                                      ),
+                                    ],
+                                  ),
+                                  if (_isPregnant) ...[
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          'Gestational Week: $_gestationalWeek',
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w500,
+                                            color: Color(0xFF880E4F),
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 2,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFC2185B),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          child: Text(
+                                            _gestationalWeek <= 12
+                                                ? '1st Trimester'
+                                                : _gestationalWeek <= 27
+                                                    ? '2nd Trimester'
+                                                    : '3rd Trimester',
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Slider(
+                                      value: _gestationalWeek.toDouble(),
+                                      min: 1,
+                                      max: 40,
+                                      divisions: 39,
+                                      activeColor: const Color(0xFFC2185B),
+                                      inactiveColor: const Color(0xFFF8BBD0),
+                                      label: 'Week $_gestationalWeek',
+                                      onChanged: (val) => setState(
+                                          () => _gestationalWeek = val.round()),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ],
                         ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Emergency Contact Details
+                Text('Emergency Contact', style: AppTextStyles.headlineSmall),
+                const SizedBox(height: 12),
+                SectionCard(
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        controller: _emergencyNameController,
+                        textCapitalization: TextCapitalization.words,
+                        style: AppTextStyles.bodyLarge,
+                        decoration: const InputDecoration(
+                          labelText: 'Contact Person Name',
+                          hintText: 'e.g. Ramesh Devi (Husband/Father)',
+                          prefixIcon: Icon(Icons.emergency_outlined),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _emergencyPhoneController,
+                        keyboardType: TextInputType.phone,
+                        style: AppTextStyles.bodyLarge,
+                        decoration: const InputDecoration(
+                          labelText: 'Emergency Phone Number',
+                          hintText: 'e.g. +91 98765 43210',
+                          prefixIcon: Icon(Icons.phone_in_talk_outlined),
+                        ),
                       ),
                     ],
                   ),
@@ -374,6 +526,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // ABHA ID
+                      TextFormField(
+                        controller: _abhaController,
+                        style: AppTextStyles.bodyLarge,
+                        decoration: const InputDecoration(
+                          labelText: 'ABHA Health ID (Optional)',
+                          hintText: 'e.g. 14-digit ABHA Number',
+                          prefixIcon: Icon(Icons.badge_outlined),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
                       Text('Blood Group', style: AppTextStyles.titleMedium),
                       const SizedBox(height: 8),
                       Wrap(

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/mock/mock_patient_data.dart';
 import '../../../core/models/doctor.dart';
 import '../../../core/providers/app_providers.dart';
@@ -19,6 +20,7 @@ class DoctorProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final doctorAsync = ref.watch(doctorDetailProvider(doctorId));
+    final l10n = context.l10n;
 
     final doc = doctorAsync.valueOrNull ??
         MockPatientData.doctors.firstWhere(
@@ -33,7 +35,7 @@ class DoctorProfileScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.surfaceVariant,
       appBar: AppBar(
-        title: const Text('Doctor Profile'),
+        title: Text(l10n.doctorProfileTitle),
         backgroundColor: AppColors.surface,
       ),
       body: SingleChildScrollView(
@@ -93,7 +95,7 @@ class DoctorProfileScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Next Available Slot',
+                  Text(l10n.nextAvailableSlot,
                       style: AppTextStyles.titleMedium),
                   const SizedBox(height: 12),
                   Container(
@@ -133,9 +135,9 @@ class DoctorProfileScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Online Consultation Available',
+                          Text(l10n.onlineConsultationAvailable,
                               style: AppTextStyles.titleSmall),
-                          Text('Video call from your phone',
+                          Text(l10n.videoCallFromPhone,
                               style: AppTextStyles.bodySmall
                                   .copyWith(color: AppColors.textMuted)),
                         ],
@@ -150,8 +152,8 @@ class DoctorProfileScreen extends ConsumerWidget {
             const SizedBox(height: 32),
 
             RuralCareButton(
-              label: 'Book Appointment',
-              onPressed: () => _showBookingSheet(context, doc),
+              label: l10n.bookAppointment,
+              onPressed: () => _showBookingSheet(context, doc, l10n),
               icon: Icons.calendar_month_outlined,
             ),
 
@@ -159,7 +161,7 @@ class DoctorProfileScreen extends ConsumerWidget {
 
             if (doc.acceptsOnline)
               RuralCareButton(
-                label: 'Start Video Consultation',
+                label: l10n.startVideoConsultation,
                 onPressed: () => context.push(AppRoutes.videoConsultation),
                 variant: RuralCareButtonVariant.secondary,
                 icon: Icons.video_call_outlined,
@@ -172,7 +174,8 @@ class DoctorProfileScreen extends ConsumerWidget {
     );
   }
 
-  void _showBookingSheet(BuildContext context, Doctor doc) {
+  void _showBookingSheet(
+      BuildContext context, Doctor doc, AppLocalizations l10n) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -199,10 +202,10 @@ class DoctorProfileScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              Text('Confirm Consultation', style: AppTextStyles.titleLarge),
+              Text(l10n.confirmConsultation, style: AppTextStyles.titleLarge),
               const SizedBox(height: 8),
               Text(
-                'Schedule consultation with ${doc.name} at ${doc.facility}',
+                l10n.scheduleConsultationWith(doc.name, doc.facility),
                 style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted),
               ),
               const SizedBox(height: 16),
@@ -219,7 +222,7 @@ class DoctorProfileScreen extends ConsumerWidget {
                         color: AppColors.primary, size: 20),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: Text('Slot: ${doc.availableSlots}',
+                      child: Text(l10n.slotLabel(doc.availableSlots),
                           style: AppTextStyles.bodyMedium
                               .copyWith(fontWeight: FontWeight.w600)),
                     ),
@@ -228,13 +231,15 @@ class DoctorProfileScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 24),
               RuralCareButton(
-                label: 'Confirm Booking',
+                label: l10n.confirmBooking,
                 onPressed: () {
                   Navigator.pop(ctx);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                          'Appointment confirmed with ${doc.name} for ${doc.availableSlots}'),
+                        l10n.appointmentConfirmedMsg(
+                            doc.name, doc.availableSlots),
+                      ),
                       backgroundColor: AppColors.secondary,
                     ),
                   );

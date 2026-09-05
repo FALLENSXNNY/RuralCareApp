@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/prescription.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_colors.dart';
@@ -30,11 +31,12 @@ class _PrescriptionsListScreenState
   @override
   Widget build(BuildContext context) {
     final rxAsync = ref.watch(prescriptionsProvider);
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: AppColors.surfaceVariant,
       appBar: AppBar(
-        title: const Text('Prescriptions'),
+        title: Text(l10n.prescriptions),
         backgroundColor: AppColors.surface,
       ),
       body: Column(
@@ -47,7 +49,7 @@ class _PrescriptionsListScreenState
               controller: _searchController,
               onChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
               decoration: InputDecoration(
-                hintText: 'Search by doctor or medicine...',
+                hintText: l10n.searchPrescriptionsHint,
                 prefixIcon: const Icon(Icons.search, color: AppColors.textMuted),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(

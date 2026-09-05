@@ -9,7 +9,7 @@ async function getPatientIdFromReq(req) {
 
 async function sendMessage(req, res, next) {
     try {
-        const { message, history } = req.body;
+        const { message, history, language } = req.body;
 
         if (!message || typeof message !== 'string' || message.trim().length === 0) {
             return res.status(400).json({
@@ -19,7 +19,7 @@ async function sendMessage(req, res, next) {
         }
 
         const patientId = await getPatientIdFromReq(req);
-        const result = await aiService.processChatMessage(patientId, message.trim(), history);
+        const result = await aiService.processChatMessage(patientId, message.trim(), history, language);
 
         res.status(200).json({
             message: result.message,

@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/patient.dart';
+import '../../../core/models/pregnancy.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/storage/local_storage_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_dimensions.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utilities/pregnancy_calculator.dart';
 import '../../../core/widgets/ruralcare_button.dart';
 import '../../../core/widgets/section_card.dart';
 
@@ -25,12 +30,21 @@ class _RegistrationHealthScreenState
     extends ConsumerState<RegistrationHealthScreen> {
   final _formKey = GlobalKey<FormState>();
   final _ageController = TextEditingController();
+  final _abhaController = TextEditingController();
   bool _isLoading = false;
   String? _errorMessage;
 
-  String _selectedBloodGroup = 'Don\'t Know';
+  String _selectedBloodGroup = "Don't Know";
   final List<String> _bloodGroups = [
-    'A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-', "Don't Know"
+    'A+',
+    'A-',
+    'B+',
+    'B-',
+    'O+',
+    'O-',
+    'AB+',
+    'AB-',
+    "Don't Know"
   ];
 
   final Map<String, bool> _conditions = {
@@ -53,9 +67,57 @@ class _RegistrationHealthScreenState
   };
 
   @override
+  void initState() {
+    super.initState();
+    final profile = LocalStorageService.instance.patientProfile;
+    if (profile != null) {
+      if (profile.age > 0) _ageController.text = profile.age.toString();
+      if (_bloodGroups.contains(profile.bloodGroup)) {
+        _selectedBloodGroup = profile.bloodGroup;
+      }
+      if (profile.abhaId.isNotEmpty) {
+        _abhaController.text = profile.abhaId;
+      }
+      for (final c in profile.conditions) {
+        if (_conditions.containsKey(c)) _conditions[c] = true;
+      }
+      for (final a in profile.allergies) {
+        if (_allergies.containsKey(a)) _allergies[a] = true;
+      }
+    }
+  }
+
+  @override
   void dispose() {
     _ageController.dispose();
+    _abhaController.dispose();
     super.dispose();
+  }
+
+  void _toggleCondition(String key) {
+    setState(() {
+      if (key == 'None') {
+        final current = _conditions['None'] ?? false;
+        _conditions.updateAll((k, v) => false);
+        _conditions['None'] = !current;
+      } else {
+        _conditions['None'] = false;
+        _conditions[key] = !(_conditions[key] ?? false);
+      }
+    });
+  }
+
+  void _toggleAllergy(String key) {
+    setState(() {
+      if (key == 'None') {
+        final current = _allergies['None'] ?? false;
+        _allergies.updateAll((k, v) => false);
+        _allergies['None'] = !current;
+      } else {
+        _allergies['None'] = false;
+        _allergies[key] = !(_allergies[key] ?? false);
+      }
+    });
   }
 
   Future<void> _finish() async {
@@ -85,36 +147,98 @@ class _RegistrationHealthScreenState
 
     final name = (extra['name'] as String?)?.trim().isNotEmpty == true
         ? (extra['name'] as String).trim()
-        : (existingProfile?.name.isNotEmpty == true ? existingProfile!.name : 'Patient');
+        : (existingProfile?.name.isNotEmpty == true
+            ? existingProfile!.name
+            : 'Patient');
+
+    final isPregnant = extra['isPregnant'] as bool? ??
+        existingProfile?.isPregnant ??
+        false;
+    final gestationalWeek = extra['gestationalWeek'] as int? ??
+        existingProfile?.gestationalWeek;
 
     final patientToSave = Patient(
-      id: existingProfile?.id ?? '',
+      id: existingProfile?.id.isNotEmpty == true
+          ? existingProfile!.id
+          : (phone.isNotEmpty ? 'patient_$phone' : 'patient_current'),
       name: name,
       phone: phone,
-      age: int.tryParse(_ageController.text.trim()) ?? existingProfile?.age ?? 0,
-      gender: extra['gender'] as String? ?? existingProfile?.gender ?? 'Female',
-      village: extra['village'] as String? ?? existingProfile?.village ?? '',
-      district: extra['district'] as String? ?? existingProfile?.district ?? '',
-      state: extra['state'] as String? ?? existingProfile?.state ?? 'Maharashtra',
+      age: int.tryParse(_ageController.text.trim()) ??
+          existingProfile?.age ??
+          28,
+      gender: extra['gender'] as String? ??
+          existingProfile?.gender ??
+          'Female',
+      isPregnant: isPregnant,
+      gestationalWeek: gestationalWeek,
+      village:
+          extra['village'] as String? ?? existingProfile?.village ?? '',
+      district:
+          extra['district'] as String? ?? existingProfile?.district ?? '',
+      state: extra['state'] as String? ??
+          existingProfile?.state ??
+          'Maharashtra',
       bloodGroup: _selectedBloodGroup,
+      emergencyContactName: extra['emergencyContactName'] as String? ??
+          existingProfile?.emergencyContactName ??
+          '',
+      emergencyContactPhone: extra['emergencyContactPhone'] as String? ??
+          existingProfile?.emergencyContactPhone ??
+          '',
+      abhaId: _abhaController.text.trim(),
+      preferredLanguage: storage.appLanguage,
       allergies: selectedAllergies,
       conditions: selectedConditions,
     );
 
-    // Save locally immediately to guarantee state is not lost
+    // Save locally immediately to guarantee persistence
     await storage.savePatientProfile(patientToSave);
     await storage.setIsNewUser(false);
+
+    // If pregnant, also initialize/update PregnancyProfile
+    if (isPregnant && gestationalWeek != null) {
+      try {
+        final pregRepo = ref.read(pregnancyRepositoryProvider);
+        final now = DateTime.now();
+        final daysRemaining = ((40 - gestationalWeek) * 7).clamp(0, 280);
+        final calculatedEdd = now.add(Duration(days: daysRemaining));
+        final calculatedLmp =
+            PregnancyCalculator.calculateLmpFromEdd(calculatedEdd);
+
+        final pregProfile = PregnancyProfile(
+          id: 'preg_${patientToSave.id}',
+          patientId: patientToSave.id,
+          isPregnant: true,
+          estimatedDueDate: calculatedEdd,
+          lastMenstrualPeriod: calculatedLmp,
+          currentWeek: gestationalWeek,
+          riskLevel: PregnancyRiskLevel.normal,
+          primaryHealthCenter:
+              '${patientToSave.district} PHC / Sub-district Hospital',
+          doctorOrAshaWorker:
+              patientToSave.emergencyContactName.isNotEmpty
+                  ? '${patientToSave.emergencyContactName} (Contact)'
+                  : 'Sunita Tai (ASHA Worker)',
+          notes:
+              'Antenatal monitoring registered. Gestational Week $gestationalWeek.',
+          updatedAt: now,
+        );
+
+        await pregRepo.savePregnancyProfile(pregProfile);
+      } catch (_) {}
+    }
 
     try {
       final repo = ref.read(patientRepositoryProvider);
       final saved = await repo.updatePatient(patientToSave);
       await storage.savePatientProfile(saved);
     } catch (_) {
-      // Backend sync error caught gracefully; local profile is already saved
+      // Offline fallback: profile already saved locally
     }
 
     ref.read(authNotifierProvider).notify();
     ref.invalidate(currentPatientProvider);
+    ref.invalidate(pregnancyProfileProvider);
 
     if (!mounted) return;
     context.go(AppRoutes.home);
@@ -122,11 +246,19 @@ class _RegistrationHealthScreenState
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
+
     return Scaffold(
-      backgroundColor: AppColors.surfaceVariant,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Health Information'),
+        title: Text(
+          loc.translate('step2Of2'),
+          style: AppTextStyles.titleMedium.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: AppColors.surface,
+        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go(AppRoutes.registerContact),
@@ -140,48 +272,105 @@ class _RegistrationHealthScreenState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Progress indicator
+                // Progress indicator (Step 2 of 2)
                 _buildProgress(step: 2),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
 
-                Text('Health Details', style: AppTextStyles.headlineMedium),
-                const SizedBox(height: 4),
                 Text(
-                  'This helps doctors and healthcare workers understand your health better.',
-                  style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMuted),
-                ),
-                const SizedBox(height: 24),
-
-                // Age
-                SectionCard(
-                  child: TextFormField(
-                    controller: _ageController,
-                    keyboardType: TextInputType.number,
-                    style: AppTextStyles.bodyLarge,
-                    decoration: const InputDecoration(
-                      labelText: 'Age',
-                      hintText: 'e.g. 34',
-                      prefixIcon: Icon(Icons.cake_outlined),
-                      suffixText: 'years',
-                    ),
-                    validator: (val) {
-                      if (val == null || val.isEmpty) return 'Please enter your age';
-                      final age = int.tryParse(val);
-                      if (age == null || age < 1 || age > 120) return 'Please enter a valid age';
-                      return null;
-                    },
+                  loc.translate('healthDetails'),
+                  style: AppTextStyles.headlineMedium.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
+                const SizedBox(height: 4),
+                Text(
+                  loc.translate('healthDetailsSubtitle'),
+                  style: AppTextStyles.bodyMedium
+                      .copyWith(color: AppColors.textMuted),
+                ),
+                const SizedBox(height: 20),
 
-                const SizedBox(height: 16),
+                if (_errorMessage != null)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.emergencyRed.withValues(alpha: 0.1),
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.radiusMd),
+                      border: Border.all(color: AppColors.emergencyRed),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.error_outline,
+                            color: AppColors.emergencyRed),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _errorMessage!,
+                            style: AppTextStyles.bodyMedium
+                                .copyWith(color: AppColors.emergencyRed),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
 
-                // Blood Group
                 SectionCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Blood Group', style: AppTextStyles.titleMedium),
-                      const SizedBox(height: 12),
+                      // Age
+                      TextFormField(
+                        controller: _ageController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        maxLength: 3,
+                        style: AppTextStyles.bodyLarge,
+                        decoration: InputDecoration(
+                          labelText: loc.translate('age'),
+                          hintText: 'e.g. 28',
+                          counterText: '',
+                          prefixIcon: const Icon(Icons.cake_outlined),
+                        ),
+                        validator: (val) {
+                          if (val == null || val.trim().isEmpty) {
+                            return 'Please enter your age';
+                          }
+                          final age = int.tryParse(val.trim());
+                          if (age == null || age < 1 || age > 120) {
+                            return 'Please enter a valid age (1-120)';
+                          }
+                          return null;
+                        },
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // ABHA ID (Optional)
+                      TextFormField(
+                        controller: _abhaController,
+                        keyboardType: TextInputType.number,
+                        style: AppTextStyles.bodyLarge,
+                        decoration: InputDecoration(
+                          labelText: loc.translate('abhaIdLabel'),
+                          hintText: loc.translate('abhaIdHint'),
+                          prefixIcon: const Icon(Icons.credit_card_outlined),
+                        ),
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      // Blood Group Selection
+                      Text(
+                        loc.translate('bloodGroup'),
+                        style: AppTextStyles.titleSmall.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
@@ -192,12 +381,108 @@ class _RegistrationHealthScreenState
                             selected: selected,
                             onSelected: (_) =>
                                 setState(() => _selectedBloodGroup = bg),
-                            selectedColor: AppColors.primaryContainer,
+                            selectedColor: AppColors.primary,
                             labelStyle: AppTextStyles.labelMedium.copyWith(
-                              color: selected ? AppColors.primary : AppColors.textMuted,
+                              color: selected
+                                  ? Colors.white
+                                  : AppColors.onSurface,
+                              fontWeight: FontWeight.bold,
                             ),
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8)),
+                              borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusMd),
+                              side: BorderSide(
+                                color: selected
+                                    ? AppColors.primary
+                                    : AppColors.outlineVariant,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+
+                      const SizedBox(height: 22),
+
+                      // Chronic Conditions Multi-select
+                      Text(
+                        loc.translate('chronicConditions'),
+                        style: AppTextStyles.titleSmall.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: _conditions.keys.map((c) {
+                          final isSelected = _conditions[c] ?? false;
+                          return FilterChip(
+                            label: Text(c),
+                            selected: isSelected,
+                            onSelected: (_) => _toggleCondition(c),
+                            selectedColor:
+                                AppColors.warning.withValues(alpha: 0.2),
+                            checkmarkColor: AppColors.warning,
+                            labelStyle: AppTextStyles.labelMedium.copyWith(
+                              color: isSelected
+                                  ? AppColors.onSurface
+                                  : AppColors.textMuted,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusMd),
+                              side: BorderSide(
+                                color: isSelected
+                                    ? AppColors.warning
+                                    : AppColors.outlineVariant,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+
+                      const SizedBox(height: 22),
+
+                      // Known Allergies Multi-select
+                      Text(
+                        loc.translate('allergies'),
+                        style: AppTextStyles.titleSmall.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: _allergies.keys.map((a) {
+                          final isSelected = _allergies[a] ?? false;
+                          return FilterChip(
+                            label: Text(a),
+                            selected: isSelected,
+                            onSelected: (_) => _toggleAllergy(a),
+                            selectedColor:
+                                AppColors.emergencyRed.withValues(alpha: 0.15),
+                            checkmarkColor: AppColors.emergencyRed,
+                            labelStyle: AppTextStyles.labelMedium.copyWith(
+                              color: isSelected
+                                  ? AppColors.emergencyRed
+                                  : AppColors.textMuted,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusMd),
+                              side: BorderSide(
+                                color: isSelected
+                                    ? AppColors.emergencyRed
+                                    : AppColors.outlineVariant,
+                              ),
+                            ),
                           );
                         }).toList(),
                       ),
@@ -205,124 +490,13 @@ class _RegistrationHealthScreenState
                   ),
                 ),
 
-                const SizedBox(height: 16),
-
-                // Existing conditions
-                SectionCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Existing Health Conditions', style: AppTextStyles.titleMedium),
-                      const SizedBox(height: 4),
-                      Text('Select all that apply',
-                          style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.textMuted)),
-                      const SizedBox(height: 12),
-                      ..._conditions.keys.map((condition) {
-                        return CheckboxListTile(
-                          title: Text(condition, style: AppTextStyles.bodyMedium),
-                          value: _conditions[condition],
-                          onChanged: (val) =>
-                              setState(() => _conditions[condition] = val ?? false),
-                          contentPadding: EdgeInsets.zero,
-                          activeColor: AppColors.primary,
-                          controlAffinity: ListTileControlAffinity.leading,
-                          dense: true,
-                        );
-                      }),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Allergies
-                SectionCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Known Allergies', style: AppTextStyles.titleMedium),
-                      const SizedBox(height: 4),
-                      Text('Select all that apply',
-                          style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.textMuted)),
-                      const SizedBox(height: 12),
-                      ..._allergies.keys.map((allergy) {
-                        return CheckboxListTile(
-                          title: Text(allergy, style: AppTextStyles.bodyMedium),
-                          value: _allergies[allergy],
-                          onChanged: (val) =>
-                              setState(() => _allergies[allergy] = val ?? false),
-                          contentPadding: EdgeInsets.zero,
-                          activeColor: AppColors.primary,
-                          controlAffinity: ListTileControlAffinity.leading,
-                          dense: true,
-                        );
-                      }),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Optional Aadhaar note
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryContainer,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.info_outline,
-                          size: 18, color: AppColors.primary),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'Aadhaar is optional. You can add it later in your profile.',
-                          style: AppTextStyles.bodySmall
-                              .copyWith(color: AppColors.primary),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Error message
-                if (_errorMessage != null) ...[
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.emergency.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                          color: AppColors.emergency.withValues(alpha: 0.3)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.error_outline,
-                            size: 16, color: AppColors.emergency),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            _errorMessage!,
-                            style: AppTextStyles.bodySmall
-                                .copyWith(color: AppColors.emergency),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-
-                const SizedBox(height: 32),
+                const SizedBox(height: 28),
 
                 RuralCareButton(
-                  label: 'Finish Registration',
+                  label: loc.translate('completeRegistration'),
                   onPressed: _finish,
                   isLoading: _isLoading,
-                  icon: Icons.check_circle_outline,
+                  icon: Icons.check_circle_outline_rounded,
                 ),
 
                 const SizedBox(height: 16),
@@ -336,15 +510,15 @@ class _RegistrationHealthScreenState
 
   Widget _buildProgress({required int step}) {
     return Row(
-      children: List.generate(3, (i) {
-        final isActive = i <= step;
+      children: List.generate(2, (i) {
+        final isActive = i < step;
         return Expanded(
           child: Container(
-            margin: EdgeInsets.only(right: i < 2 ? 6 : 0),
-            height: 4,
+            margin: EdgeInsets.only(right: i < 1 ? 6 : 0),
+            height: 5,
             decoration: BoxDecoration(
               color: isActive ? AppColors.primary : AppColors.border,
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(3),
             ),
           ),
         );

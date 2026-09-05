@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
@@ -25,6 +26,7 @@ class OfflineEmergencyScreen extends ConsumerWidget {
     final isOnline = ref.watch(isOnlineProvider);
     final storage = ref.watch(localStorageProvider);
     final isDownloaded = storage.isOfflineContentDownloaded;
+    final l10n = context.l10n;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
@@ -47,7 +49,7 @@ class OfflineEmergencyScreen extends ConsumerWidget {
                       onPressed: () => context.go(AppRoutes.emergency),
                     ),
                     Text(
-                      'Offline Emergency Help',
+                      l10n.emergencyHelp,
                       style: AppTextStyles.emergencyTitle.copyWith(fontSize: 22),
                     ),
                   ],
@@ -80,17 +82,15 @@ class OfflineEmergencyScreen extends ConsumerWidget {
 
                 const SizedBox(height: 32),
 
-                // Call 108
                 GestureDetector(
                   onTap: _callAmbulance,
                   child: Container(
-                    height: 80,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Icon(
                           Icons.phone,
@@ -98,24 +98,33 @@ class OfflineEmergencyScreen extends ConsumerWidget {
                           size: 32,
                         ),
                         const SizedBox(width: 14),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Call 108',
-                              style: AppTextStyles.headlineMedium.copyWith(
-                                color: AppColors.emergency,
-                                fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  l10n.callAmbulance,
+                                  style: AppTextStyles.headlineMedium.copyWith(
+                                    color: AppColors.emergency,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  maxLines: 1,
+                                ),
                               ),
-                            ),
-                            Text(
-                              'National Ambulance Service (Free 24/7)',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.textMuted,
+                              Text(
+                                l10n.call108Subtitle,
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.textMuted,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),

@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/patient.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/language_selector_modal.dart';
 import '../../../core/widgets/ruralcare_button.dart';
 import '../../../core/widgets/section_card.dart';
 
@@ -16,16 +18,33 @@ class PatientProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final patientAsync = ref.watch(currentPatientProvider);
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: AppColors.surfaceVariant,
       appBar: AppBar(
-        title: const Text('My Profile'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: l10n.back,
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go(AppRoutes.home);
+            }
+          },
+        ),
+        title: Text(l10n.profileTitle),
         backgroundColor: AppColors.surface,
         actions: [
           IconButton(
+            icon: const Icon(Icons.translate_rounded, color: AppColors.primary),
+            tooltip: l10n.changeLanguage,
+            onPressed: () => LanguageSelectorModal.show(context),
+          ),
+          IconButton(
             icon: const Icon(Icons.edit_outlined),
-            tooltip: 'Edit Profile',
+            tooltip: l10n.editProfile,
             onPressed: () => context.push(AppRoutes.editProfile),
           ),
         ],
@@ -56,7 +75,7 @@ class PatientProfileScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () => ref.invalidate(currentPatientProvider),
-                  child: const Text('Retry'),
+                  child: Text(l10n.retry),
                 ),
               ],
             ),
@@ -68,6 +87,11 @@ class PatientProfileScreen extends ConsumerWidget {
 
   Widget _buildProfileContent(
       BuildContext context, WidgetRef ref, Patient patient) {
+    final l10n = context.l10n;
+    final currentLocale = ref.watch(localeProvider);
+    final activeLanguageName =
+        AppLocalizations.languageNames[currentLocale.languageCode] ?? 'English';
+
     final displayName =
         patient.name.isNotEmpty ? patient.name : 'Patient';
     final initial =
@@ -100,17 +124,30 @@ class PatientProfileScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(displayName, style: AppTextStyles.headlineSmall),
+                      Text(displayName, style: AppTextStyles.headlineMedium),
                       const SizedBox(height: 4),
-                      Text(patient.phone,
-                          style: AppTextStyles.bodyMedium
-                              .copyWith(color: AppColors.textMuted)),
+                      Text(
+                        patient.phone.isNotEmpty ? patient.phone : 'No phone',
+                        style: AppTextStyles.bodyMedium
+                            .copyWith(color: AppColors.textMuted),
+                      ),
                       if (locationText.isNotEmpty) ...[
                         const SizedBox(height: 4),
-                        Text(
-                          locationText,
-                          style: AppTextStyles.bodySmall
-                              .copyWith(color: AppColors.textMuted),
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on_outlined,
+                                size: 14, color: AppColors.textMuted),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                locationText,
+                                style: AppTextStyles.bodySmall
+                                    .copyWith(color: AppColors.textMuted),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ],
@@ -122,60 +159,80 @@ class PatientProfileScreen extends ConsumerWidget {
 
           const SizedBox(height: 16),
 
-          // ID card
-          if (patient.id.isNotEmpty) ...[
-            SectionCard(
-              child: Row(
-                children: [
-                  const Icon(Icons.badge_outlined,
-                      color: AppColors.primary, size: 22),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Patient ID',
-                          style: AppTextStyles.bodySmall
-                              .copyWith(color: AppColors.textMuted)),
-                      Text(patient.id, style: AppTextStyles.titleSmall),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-
-          // Health details
+          // Basic medical info
           SectionCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Health Details', style: AppTextStyles.titleLarge),
+                Text(l10n.personalDetails, style: AppTextStyles.titleLarge),
                 const SizedBox(height: 16),
-                _profileRow(Icons.cake_outlined, 'Age',
-                    patient.age > 0 ? '${patient.age} years' : 'Not set', AppColors.primary),
-                const Divider(height: 20),
-                _profileRow(Icons.person_outline, 'Gender',
-                    patient.gender.isNotEmpty ? patient.gender : 'Not set', AppColors.primary),
-                const Divider(height: 20),
-                _profileRow(Icons.water_drop_outlined, 'Blood Group',
-                    patient.bloodGroup.isNotEmpty ? patient.bloodGroup : "Don't Know", AppColors.emergency),
-                const Divider(height: 20),
                 _profileRow(
-                    Icons.medical_information_outlined,
-                    'Conditions',
-                    patient.conditions.isNotEmpty
-                        ? patient.conditions.join(', ')
-                        : 'None reported',
-                    AppColors.warning),
-                const Divider(height: 20),
+                  Icons.calendar_today_outlined,
+                  l10n.age,
+                  patient.age > 0 ? '${patient.age} years' : 'Not specified',
+                  AppColors.primary,
+                ),
+                const Divider(height: 24),
                 _profileRow(
+                  Icons.person_outline,
+                  l10n.gender,
+                  patient.gender.isNotEmpty ? patient.gender : 'Not specified',
+                  AppColors.secondary,
+                ),
+                const Divider(height: 24),
+                _profileRow(
+                  Icons.bloodtype_outlined,
+                  l10n.bloodGroup,
+                  patient.bloodGroup.isNotEmpty
+                      ? patient.bloodGroup
+                      : 'Not specified',
+                  AppColors.emergency,
+                ),
+                if (patient.abhaId.isNotEmpty) ...[
+                  const Divider(height: 24),
+                  _profileRow(
+                    Icons.badge_outlined,
+                    l10n.abhaIdLabel,
+                    patient.abhaId,
+                    AppColors.primary,
+                  ),
+                ],
+                if (patient.gender.toLowerCase() == 'female' && patient.isPregnant) ...[
+                  const Divider(height: 24),
+                  _profileRow(
+                    Icons.pregnant_woman_rounded,
+                    l10n.pregnancyTitle,
+                    '${l10n.yesPregnant} (${l10n.currentWeek(patient.gestationalWeek ?? 24)})',
+                    const Color(0xFFC2185B),
+                  ),
+                ],
+                if (patient.emergencyContactName.isNotEmpty || patient.emergencyContactPhone.isNotEmpty) ...[
+                  const Divider(height: 24),
+                  _profileRow(
+                    Icons.contact_phone_outlined,
+                    l10n.emergencyContactSection,
+                    '${patient.emergencyContactName}${patient.emergencyContactPhone.isNotEmpty ? ' (${patient.emergencyContactPhone})' : ''}',
+                    AppColors.emergency,
+                  ),
+                ],
+                if (patient.allergies.isNotEmpty) ...[
+                  const Divider(height: 24),
+                  _profileRow(
                     Icons.warning_amber_outlined,
-                    'Allergies',
-                    patient.allergies.isNotEmpty
-                        ? patient.allergies.join(', ')
-                        : 'None reported',
-                    AppColors.emergency),
+                    l10n.allergies,
+                    patient.allergies.join(', '),
+                    AppColors.warning,
+                  ),
+                ],
+                if (patient.conditions.isNotEmpty) ...[
+                  const Divider(height: 24),
+                  _profileRow(
+                    Icons.medical_information_outlined,
+                    l10n.chronicConditions,
+                    patient.conditions.join(', '),
+                    AppColors.info,
+                  ),
+                ],
               ],
             ),
           ),
@@ -187,8 +244,15 @@ class PatientProfileScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Settings', style: AppTextStyles.titleLarge),
+                Text(l10n.settings, style: AppTextStyles.titleLarge),
                 const SizedBox(height: 8),
+                _settingsTile(
+                  Icons.language_outlined,
+                  l10n.appLanguage,
+                  activeLanguageName,
+                  onTap: () => LanguageSelectorModal.show(context),
+                ),
+                const Divider(height: 1),
                 _settingsTile(
                   Icons.download_outlined,
                   'Offline Emergency Content',
@@ -202,13 +266,6 @@ class PatientProfileScreen extends ConsumerWidget {
                   'Appointments, reminders',
                   onTap: () {},
                 ),
-                const Divider(height: 1),
-                _settingsTile(
-                  Icons.language_outlined,
-                  'Language',
-                  'English',
-                  onTap: () {},
-                ),
               ],
             ),
           ),
@@ -216,7 +273,7 @@ class PatientProfileScreen extends ConsumerWidget {
           const SizedBox(height: 24),
 
           RuralCareButton(
-            label: 'Sign Out',
+            label: l10n.logout,
             onPressed: () async {
               await ref.read(firebaseAuthServiceProvider).signOut();
               ref.invalidate(currentPatientProvider);

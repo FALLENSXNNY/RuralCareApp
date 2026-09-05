@@ -36,6 +36,7 @@ class AppColors {
   // Status / Feedback
   static const Color success = Color(0xFF2E7D32);
   static const Color warning = Color(0xFFF57F17);
+  static const Color warningContainer = Color(0xFFFFF8E1);
   static const Color info = Color(0xFF1565C0);
   static const Color error = Color(0xFFC62828);
 
@@ -46,4 +47,14 @@ class AppColors {
   // Border / Divider
   static const Color border = Color(0xFFE0E0E0);
   static const Color divider = Color(0xFFEEEEEE);
+
+  // Semantic & Stitch M3 Aliases
+  static const Color emergencyRed = Color(0xFFC62828);
+  static const Color healthGreen = Color(0xFF2E7D32);
+  static const Color background = Color(0xFFF8F9FA);
+  static const Color onSurface = Color(0xFF1A1C1E);
+  static const Color onSurfaceVariant = Color(0xFF506079);
+  static const Color outlineVariant = Color(0xFFA3B3CF);
+  static const Color surfaceContainerLow = Color(0xFFF0F3FF);
+  static const Color errorContainer = Color(0xFFFFEBEE);
 }

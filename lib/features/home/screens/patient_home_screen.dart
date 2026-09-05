@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/mock/mock_patient_data.dart';
 import '../../../core/models/patient.dart';
 import '../../../core/providers/app_providers.dart';
@@ -9,6 +10,7 @@ import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/emergency_button.dart';
+import '../../../core/widgets/language_selector_modal.dart';
 import '../../../core/widgets/section_card.dart';
 
 class PatientHomeScreen extends ConsumerWidget {
@@ -18,6 +20,7 @@ class PatientHomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final patientAsync = ref.watch(currentPatientProvider);
     final cached = ref.read(localStorageProvider).patientProfile;
+    final l10n = context.l10n;
 
     // Use live patient data if resolved, or cached profile, or default fallback
     final Patient patient = patientAsync.valueOrNull ??
@@ -56,38 +59,64 @@ class PatientHomeScreen extends ConsumerWidget {
                         children: [
                           Row(
                             children: [
-                              GestureDetector(
-                                onTap: () => context.go(AppRoutes.profile),
-                                child: CircleAvatar(
-                                  radius: 22,
-                                  backgroundColor: AppColors.surface,
-                                  child: Text(
-                                    initial,
-                                    style: AppTextStyles.titleMedium
-                                        .copyWith(color: AppColors.primary),
+                              if (context.canPop()) ...[
+                                IconButton(
+                                  icon: const Icon(Icons.arrow_back,
+                                      color: Colors.white),
+                                  tooltip: l10n.back,
+                                  onPressed: () => context.pop(),
+                                ),
+                                const SizedBox(width: 4),
+                              ],
+                              Expanded(
+                                child: GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: () => context.go(AppRoutes.profile),
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 22,
+                                        backgroundColor: AppColors.surface,
+                                        child: Text(
+                                          initial,
+                                          style: AppTextStyles.titleMedium
+                                              .copyWith(
+                                                  color: AppColors.primary),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              l10n.greeting(displayName),
+                                              style: AppTextStyles.titleLarge
+                                                  .copyWith(color: Colors.white),
+                                            ),
+                                            if (locationText.isNotEmpty)
+                                              Text(
+                                                locationText,
+                                                style: AppTextStyles.bodySmall
+                                                    .copyWith(
+                                                        color: Colors.white
+                                                            .withValues(
+                                                                alpha: 0.8)),
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Namaste, $displayName',
-                                      style: AppTextStyles.titleLarge
-                                          .copyWith(color: Colors.white),
-                                    ),
-                                    if (locationText.isNotEmpty)
-                                      Text(
-                                        locationText,
-                                        style: AppTextStyles.bodySmall
-                                            .copyWith(
-                                                color: Colors.white
-                                                    .withValues(alpha: 0.8)),
-                                      ),
-                                  ],
-                                ),
+                              IconButton(
+                                icon: const Icon(Icons.translate_rounded,
+                                    color: Colors.white),
+                                tooltip: l10n.changeLanguage,
+                                onPressed: () =>
+                                    LanguageSelectorModal.show(context),
                               ),
                               IconButton(
                                 icon: const Icon(Icons.notifications_outlined,
@@ -100,7 +129,7 @@ class PatientHomeScreen extends ConsumerWidget {
 
                           // Emergency call banner
                           EmergencyButton(
-                            label: 'Emergency / 108 Ambulance',
+                            label: l10n.homeEmergencyBanner,
                             onPressed: () => context.go(AppRoutes.emergency),
                           ),
                         ],
@@ -116,7 +145,7 @@ class PatientHomeScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // ── Quick action grid ──────────────────────────
-                          Text('Quick Actions',
+                          Text(l10n.homeQuickActions,
                               style: AppTextStyles.titleLarge),
                           const SizedBox(height: 12),
                           GridView.count(
@@ -129,7 +158,7 @@ class PatientHomeScreen extends ConsumerWidget {
                               _QuickActionTile(
                                 action: _QuickAction(
                                   icon: Icons.chat_bubble_outline,
-                                  label: 'Ask\nAI',
+                                  label: l10n.actionAskAi,
                                   color: AppColors.primary,
                                   onTap: () =>
                                       context.go(AppRoutes.aiChat),
@@ -138,7 +167,7 @@ class PatientHomeScreen extends ConsumerWidget {
                               _QuickActionTile(
                                 action: _QuickAction(
                                   icon: Icons.video_call_outlined,
-                                  label: 'Talk to\nDoctor',
+                                  label: l10n.actionTalkDoctor,
                                   color: AppColors.secondary,
                                   onTap: () =>
                                       context.go(AppRoutes.videoConsultation),
@@ -147,7 +176,7 @@ class PatientHomeScreen extends ConsumerWidget {
                               _QuickActionTile(
                                 action: _QuickAction(
                                   icon: Icons.local_hospital_outlined,
-                                  label: 'Find\nFacility',
+                                  label: l10n.actionFindFacility,
                                   color: const Color(0xFF00838F),
                                   onTap: () =>
                                       context.go(AppRoutes.facilityFinder),
@@ -156,7 +185,7 @@ class PatientHomeScreen extends ConsumerWidget {
                               _QuickActionTile(
                                 action: _QuickAction(
                                   icon: Icons.folder_outlined,
-                                  label: 'My Health\nRecords',
+                                  label: l10n.actionHealthRecords,
                                   color: const Color(0xFF6750A4),
                                   onTap: () =>
                                       context.go(AppRoutes.recordsHub),
@@ -165,7 +194,7 @@ class PatientHomeScreen extends ConsumerWidget {
                               _QuickActionTile(
                                 action: _QuickAction(
                                   icon: Icons.upload_file_outlined,
-                                  label: 'Upload\nDocs',
+                                  label: l10n.actionUploadDocs,
                                   color: const Color(0xFF0277BD),
                                   onTap: () => context.go(AppRoutes.documentUpload),
                                 ),
@@ -173,19 +202,66 @@ class PatientHomeScreen extends ConsumerWidget {
                               _QuickActionTile(
                                 action: _QuickAction(
                                   icon: Icons.person_search_outlined,
-                                  label: 'Find\nDoctor',
+                                  label: l10n.actionFindDoctor,
                                   color: const Color(0xFFE65100),
                                   onTap: () =>
-                                      context.go(AppRoutes.findDoctor),
+                                      context.go('${AppRoutes.facilityFinder}?category=Doctors'),
                                 ),
                               ),
                             ],
                           ),
 
-                          const SizedBox(height: 24),
+                          // ── Mother & Child Care Highlight Card (Female & Pregnant only) ──
+                          if (patient.gender.toLowerCase() == 'female' && patient.isPregnant) ...[
+                            SectionCard(
+                              onTap: () => context.go(AppRoutes.pregnancy),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFCE4EC),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(
+                                      Icons.pregnant_woman_rounded,
+                                      color: Color(0xFFC2185B),
+                                      size: 28,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          l10n.pregnancyTitle,
+                                          style: AppTextStyles.titleMedium,
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          '${l10n.currentWeek(patient.gestationalWeek ?? 24)} · ${_getTrimesterLabel(patient.gestationalWeek ?? 24, l10n)}',
+                                          style: AppTextStyles.bodySmall.copyWith(
+                                            color: const Color(0xFFC2185B),
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Icons.chevron_right,
+                                    color: AppColors.textMuted,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                          ],
 
                           // ── Health profile summary card ────────────────
-                          Text('Health Profile',
+                          Text(l10n.healthProfile,
                               style: AppTextStyles.titleLarge),
                           const SizedBox(height: 8),
                           SectionCard(
@@ -194,28 +270,28 @@ class PatientHomeScreen extends ConsumerWidget {
                               children: [
                                 _HealthInfoRow(
                                   icon: Icons.bloodtype_outlined,
-                                  label: 'Blood Group',
+                                  label: l10n.bloodGroup,
                                   value: patient.bloodGroup.isNotEmpty
                                       ? patient.bloodGroup
-                                      : "Don't Know",
+                                      : l10n.dontKnow,
                                   color: AppColors.emergency,
                                 ),
                                 const Divider(height: 16),
                                 _HealthInfoRow(
                                   icon: Icons.medical_information_outlined,
-                                  label: 'Conditions',
+                                  label: l10n.chronicConditions,
                                   value: patient.conditions.isNotEmpty
                                       ? patient.conditions.join(', ')
-                                      : 'None recorded',
+                                      : l10n.noneRecorded,
                                   color: AppColors.warning,
                                 ),
                                 const Divider(height: 16),
                                 _HealthInfoRow(
                                   icon: Icons.warning_amber_outlined,
-                                  label: 'Allergies',
+                                  label: l10n.allergies,
                                   value: patient.allergies.isNotEmpty
                                       ? patient.allergies.join(', ')
-                                      : 'No known allergies',
+                                      : l10n.noKnownAllergies,
                                   color: AppColors.emergency,
                                 ),
                               ],
@@ -228,12 +304,12 @@ class PatientHomeScreen extends ConsumerWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Recent Prescriptions',
+                              Text(l10n.recentPrescriptions,
                                   style: AppTextStyles.titleLarge),
                               TextButton(
                                 onPressed: () =>
                                     context.go(AppRoutes.recordsHub),
-                                child: Text('See All',
+                                child: Text(l10n.seeAll,
                                     style: AppTextStyles.labelMedium
                                         .copyWith(color: AppColors.primary)),
                               ),
@@ -244,7 +320,7 @@ class PatientHomeScreen extends ConsumerWidget {
                           if (rxList.isEmpty)
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 8),
-                              child: Text('No prescriptions found',
+                              child: Text(l10n.noPrescriptionsFound,
                                   style: AppTextStyles.bodyMedium
                                       .copyWith(color: AppColors.textMuted)),
                             ),
@@ -279,7 +355,7 @@ class PatientHomeScreen extends ConsumerWidget {
                                               style: AppTextStyles.titleSmall),
                                           const SizedBox(height: 2),
                                           Text(
-                                            '${rx.medicines.length} medicines · ${rx.date}',
+                                            '${l10n.medicinesCount(rx.medicines.length)} · ${rx.date}',
                                             style: AppTextStyles.bodySmall
                                                 .copyWith(
                                                     color: AppColors.textMuted),
@@ -299,7 +375,7 @@ class PatientHomeScreen extends ConsumerWidget {
 
                           // ── Referrals ────────────────────────────────────
                           if (refList.isNotEmpty) ...[
-                            Text('Active Referrals',
+                            Text(l10n.activeReferrals,
                                 style: AppTextStyles.titleLarge),
                             const SizedBox(height: 8),
                             ...refList.map((referralItem) => Padding(
@@ -373,6 +449,12 @@ class PatientHomeScreen extends ConsumerWidget {
       ),
     );
   }
+
+  String _getTrimesterLabel(int week, AppLocalizations l10n) {
+    if (week <= 12) return l10n.trimester1;
+    if (week <= 27) return l10n.trimester2;
+    return l10n.trimester3;
+  }
 }
 
 class _QuickAction {
@@ -408,20 +490,25 @@ class _QuickActionTile extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 44,
-              height: 44,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
                 color: action.color.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
-              child: Icon(action.icon, color: action.color, size: 22),
+              child: Icon(action.icon, color: action.color, size: 26),
             ),
-            const SizedBox(height: 8),
-            Text(
-              action.label,
-              style: AppTextStyles.labelSmall
-                  .copyWith(color: AppColors.textSecondary),
-              textAlign: TextAlign.center,
+            const SizedBox(height: 6),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Text(
+                action.label,
+                style: AppTextStyles.labelSmall
+                    .copyWith(color: AppColors.textSecondary),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),

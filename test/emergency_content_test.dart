@@ -73,6 +73,8 @@ void main() {
       expect(topicIds, contains('heat_stroke'));
       expect(topicIds, contains('poisoning'));
       expect(topicIds, contains('high_fever'));
+      expect(topicIds, contains('pregnancy_emergency'));
+      expect(topicIds, contains('emergency_labour_delivery'));
     });
   });
 }

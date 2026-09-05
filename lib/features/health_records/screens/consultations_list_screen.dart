@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/consultation.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_colors.dart';
@@ -30,11 +31,12 @@ class _ConsultationsListScreenState
   @override
   Widget build(BuildContext context) {
     final conAsync = ref.watch(consultationsProvider);
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: AppColors.surfaceVariant,
       appBar: AppBar(
-        title: const Text('Doctor Consultations & Visits'),
+        title: Text(l10n.consultations),
         backgroundColor: AppColors.surface,
       ),
       body: Column(
@@ -48,7 +50,7 @@ class _ConsultationsListScreenState
               onChanged: (val) =>
                   setState(() => _searchQuery = val.trim().toLowerCase()),
               decoration: InputDecoration(
-                hintText: 'Search doctor, diagnosis or facility...',
+                hintText: l10n.searchConsultationsHint,
                 prefixIcon:
                     const Icon(Icons.search, color: AppColors.textMuted),
                 suffixIcon: _searchQuery.isNotEmpty

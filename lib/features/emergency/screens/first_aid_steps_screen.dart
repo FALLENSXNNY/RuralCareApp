@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/first_aid_topic.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/router/app_router.dart';
@@ -92,6 +93,7 @@ class _FirstAidStepsScreenState extends ConsumerState<FirstAidStepsScreen> {
     final totalSteps = steps.length;
     final step =
         totalSteps > 0 ? steps[_currentStep.clamp(0, totalSteps - 1)] : null;
+    final l10n = context.l10n;
 
     return Column(
       children: [
@@ -175,7 +177,7 @@ class _FirstAidStepsScreenState extends ConsumerState<FirstAidStepsScreen> {
                     const Icon(Icons.phone, color: AppColors.emergency, size: 20),
                     const SizedBox(width: 8),
                     Text(
-                      'Call 108 Ambulance NOW',
+                      l10n.call108Now,
                       style: AppTextStyles.titleMedium.copyWith(
                         color: AppColors.emergency,
                         fontWeight: FontWeight.w800,
@@ -206,7 +208,7 @@ class _FirstAidStepsScreenState extends ConsumerState<FirstAidStepsScreen> {
                     ),
                     alignment: Alignment.center,
                     child: Text(
-                      'Step-by-Step',
+                      l10n.stepByStep,
                       style: AppTextStyles.labelMedium.copyWith(
                         color: _selectedTab == 0
                             ? AppColors.emergency
@@ -229,7 +231,7 @@ class _FirstAidStepsScreenState extends ConsumerState<FirstAidStepsScreen> {
                     ),
                     alignment: Alignment.center,
                     child: Text(
-                      'DOs & DON\'Ts',
+                      '${l10n.dos} & ${l10n.donts}',
                       style: AppTextStyles.labelMedium.copyWith(
                         color: _selectedTab == 1
                             ? AppColors.emergency
@@ -272,7 +274,7 @@ class _FirstAidStepsScreenState extends ConsumerState<FirstAidStepsScreen> {
                         ),
                       ),
                       child: Text(
-                        'Previous',
+                        l10n.previousStep,
                         style: AppTextStyles.labelLarge
                             .copyWith(color: Colors.white),
                       ),
@@ -296,8 +298,8 @@ class _FirstAidStepsScreenState extends ConsumerState<FirstAidStepsScreen> {
                     ),
                     child: Text(
                       _currentStep < totalSteps - 1
-                          ? 'Next Step (${_currentStep + 2}/$totalSteps)'
-                          : 'Find Nearest Facility',
+                          ? l10n.nextStepLabel(_currentStep + 2, totalSteps)
+                          : l10n.findNearestEmergencyFacility,
                       style: AppTextStyles.labelLarge.copyWith(
                         color: AppColors.emergency,
                         fontWeight: FontWeight.bold,
@@ -314,7 +316,7 @@ class _FirstAidStepsScreenState extends ConsumerState<FirstAidStepsScreen> {
             child: ElevatedButton.icon(
               onPressed: () => context.go(AppRoutes.facilityFinder),
               icon: const Icon(Icons.local_hospital_outlined, size: 18),
-              label: const Text('Find Emergency Facility Near You'),
+              label: Text(l10n.findEmergencyFacility),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
                 backgroundColor: Colors.white,
@@ -335,6 +337,7 @@ class _FirstAidStepsScreenState extends ConsumerState<FirstAidStepsScreen> {
     if (step == null) {
       return const SizedBox.shrink();
     }
+    final l10n = context.l10n;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -386,7 +389,7 @@ class _FirstAidStepsScreenState extends ConsumerState<FirstAidStepsScreen> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
-                      'STEP ${step.step} OF $totalSteps',
+                      l10n.stepOfTotal(step.step, totalSteps),
                       style: AppTextStyles.labelSmall.copyWith(
                         color: AppColors.emergency,
                         fontWeight: FontWeight.bold,
@@ -426,6 +429,8 @@ class _FirstAidStepsScreenState extends ConsumerState<FirstAidStepsScreen> {
   }
 
   Widget _buildDosAndDontsView(FirstAidTopic topic) {
+    final l10n = context.l10n;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
@@ -442,7 +447,7 @@ class _FirstAidStepsScreenState extends ConsumerState<FirstAidStepsScreen> {
                 const Icon(Icons.check_circle, color: AppColors.success, size: 22),
                 const SizedBox(width: 8),
                 Text(
-                  'DOs (Recommended Actions)',
+                  l10n.dosTitle,
                   style: AppTextStyles.titleSmall.copyWith(
                     color: AppColors.success,
                     fontWeight: FontWeight.bold,
@@ -489,7 +494,7 @@ class _FirstAidStepsScreenState extends ConsumerState<FirstAidStepsScreen> {
                 const Icon(Icons.cancel, color: AppColors.emergency, size: 22),
                 const SizedBox(width: 8),
                 Text(
-                  'DON\'Ts (Harmful Actions)',
+                  l10n.dontsTitle,
                   style: AppTextStyles.titleSmall.copyWith(
                     color: AppColors.emergency,
                     fontWeight: FontWeight.bold,

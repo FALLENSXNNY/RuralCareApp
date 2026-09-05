@@ -50,6 +50,7 @@ function createApp() {
         });
     });
 
+    app.use('/api', authLimiter, routes);
     app.use('/api/v1', authLimiter, routes);
 
     // 404 + error handling

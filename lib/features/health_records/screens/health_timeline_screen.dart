@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/health_record.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/theme/app_colors.dart';
@@ -28,11 +29,12 @@ class _HealthTimelineScreenState extends ConsumerState<HealthTimelineScreen> {
   @override
   Widget build(BuildContext context) {
     final timelineAsync = ref.watch(healthTimelineProvider);
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: AppColors.surfaceVariant,
       appBar: AppBar(
-        title: const Text('Health Timeline'),
+        title: Text(l10n.healthTimeline),
         backgroundColor: AppColors.surface,
       ),
       body: Column(

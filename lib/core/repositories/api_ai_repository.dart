@@ -37,12 +37,14 @@ class ApiAIRepository implements AIRepository {
   Future<AiMessage> sendMessage(
     String message, {
     List<AiMessage>? history,
+    String? language,
   }) async {
     try {
       final token = await _getIdToken();
 
       final payload = {
         'message': message,
+        'language': language ?? 'en',
         if (history != null && history.isNotEmpty)
           'history': history.map((m) => m.toJson()).toList(),
       };
@@ -55,7 +57,11 @@ class ApiAIRepository implements AIRepository {
       );
 
       if (!response.isSuccess || response.data == null) {
-        return await _fallback.sendMessage(message, history: history);
+        return await _fallback.sendMessage(
+          message,
+          history: history,
+          language: language,
+        );
       }
 
       final data = response.data!;
@@ -67,7 +73,11 @@ class ApiAIRepository implements AIRepository {
         isEmergency: data['isEmergency'] as bool? ?? false,
       );
     } catch (_) {
-      return await _fallback.sendMessage(message, history: history);
+      return await _fallback.sendMessage(
+        message,
+        history: history,
+        language: language,
+      );
     }
   }
 
